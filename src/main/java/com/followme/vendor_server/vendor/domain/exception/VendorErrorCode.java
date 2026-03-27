@@ -29,9 +29,15 @@ import org.springframework.http.HttpStatus;
  */
 @RequiredArgsConstructor
 public enum VendorErrorCode implements ErrorCode {
+  VENDOR_NOT_FOUND("V001", "존재하지 않는 업체 입니다.", HttpStatus.NOT_FOUND),
+
+  PRODUCT_INVALID_PRICE("V050", "유효하지 않은 상품 가격입니다.", HttpStatus.BAD_REQUEST),
+
   HUB_NOT_FOUND("V101", "존재하지 않는 허브입니다.", HttpStatus.NOT_FOUND),
 
+  /** 권한 관련 에러 */
   VENDOR_REGISTER_FORBIDDEN("V401", "업체 등록 권한이 부족합니다.", HttpStatus.FORBIDDEN),
+  PRODUCT_REGISTER_FORBIDDEN("V402", "상품 등록 권한이 부족합니다.", HttpStatus.FORBIDDEN),
   ;
 
   private final String code;

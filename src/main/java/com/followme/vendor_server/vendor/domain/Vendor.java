@@ -1,11 +1,11 @@
 package com.followme.vendor_server.vendor.domain;
 
 import com.followMe.common.entity.BaseAudit;
-import com.followMe.common.exception.BusinessException;
 import com.followme.vendor_server.vendor.domain.exception.VendorErrorCode;
 import com.followme.vendor_server.vendor.domain.exception.VendorException;
 import com.followme.vendor_server.vendor.domain.service.HubExistenceChecker;
 import com.followme.vendor_server.vendor.domain.service.PermissionChecker;
+import com.followme.vendor_server.vendor.domain.service.ProductPermissionChecker;
 import com.followme.vendor_server.vendor.domain.vo.Address;
 import com.followme.vendor_server.vendor.domain.vo.Owner;
 import com.followme.vendor_server.vendor.domain.vo.VendorId;
@@ -42,8 +42,8 @@ import lombok.*;
  * <h2>주요 메서드</h2>
  *
  * <ul>
- *   <li>{@link #create(UUID, Owner, String, VendorType, String, Address, PermissionChecker,
- *       HubExistenceChecker)} - 업체 등록
+ *   <li>{@link #create(UUID, UUID, String, String, VendorType, String, String, Double, Double,
+ *       PermissionChecker, HubExistenceChecker)} - 업체 등록
  * </ul>
  *
  * @author 정승현
@@ -98,9 +98,11 @@ public class Vendor extends BaseAudit {
    *
    * <p>업체를 등록한다.
    *
-   * <p>권한 검증 실패 시 {@link BusinessException} 발생
+   * <p>권한 검증 실패 시 {@link VendorException} 발생
    *
    * <p>잘못된 인자로 생성 요청 시 {@link IllegalArgumentException} 발생
+   *
+   * <h2>업체 등록 검증</h2>
    *
    * <ul>
    *   <li>생성 권한 검증 [MASTER, HUB]
@@ -119,7 +121,7 @@ public class Vendor extends BaseAudit {
    * @param permissionChecker 권한 검증 인터페이스
    * @param hubExistenceChecker 허브 존재 여부 검증 인터페이스
    * @return 등록된 업체 엔티티
-   * @throws BusinessException 비즈니스 로직 에러
+   * @throws VendorException 비즈니스 로직 에러
    * @throws IllegalArgumentException 잘못된 인자 에러
    * @author 정승현
    */
@@ -147,6 +149,33 @@ public class Vendor extends BaseAudit {
         .description(description)
         .address(Address.of(address, latitude, longitude))
         .build();
+  }
+
+  public Product addProduct(
+      UUID requesterId,
+      String code,
+      String name,
+      String description,
+      Integer price,
+      ProductStatus status,
+      ProductPermissionChecker productPermissionChecker,
+      HubExistenceChecker hubExistenceChecker) {
+
+    Product product =
+        Product.create(
+            this,
+            this.hubId,
+            owner.getId(),
+            requesterId,
+            code,
+            name,
+            description,
+            price,
+            status,
+            productPermissionChecker,
+            hubExistenceChecker);
+    this.products.add(product);
+    return product;
   }
 
   private static void checkCreatePermission(
