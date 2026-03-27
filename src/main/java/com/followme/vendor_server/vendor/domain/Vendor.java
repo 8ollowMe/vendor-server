@@ -107,12 +107,15 @@ public class Vendor extends BaseAudit {
    *   <li>허브 존재 여부 검증
    * </ul>
    *
-   * @param hubId 소속된 허브 Id
-   * @param requestId 업체 등록 요청자 Id
+   * @param hubId 소속된 허브 식별자
+   * @param ownerId 업체 등록 요청자 식별자
+   * @param ownerName 업체 등록 요청자 이름
    * @param name 업체를 등록 할 이름
    * @param type 업체 종류 [SUPPLIER, BUYER]
    * @param description 업체에 대한 설명
    * @param address 업체의 주소정보
+   * @param longitude 업체 주소 경도 값
+   * @param latitude 업체 주소 위도 값
    * @param permissionChecker 권한 검증 인터페이스
    * @param hubExistenceChecker 허브 존재 여부 검증 인터페이스
    * @return 등록된 업체 엔티티
@@ -122,24 +125,27 @@ public class Vendor extends BaseAudit {
    */
   public static Vendor create(
       UUID hubId,
-      Owner requestId,
+      UUID ownerId,
+      String ownerName,
       String name,
       VendorType type,
       String description,
-      Address address,
+      String address,
+      Double latitude,
+      Double longitude,
       PermissionChecker permissionChecker,
       HubExistenceChecker hubExistenceChecker) {
 
-    checkCreatePermission(hubId, requestId.getId(), permissionChecker);
+    checkCreatePermission(hubId, ownerId, permissionChecker);
     checkHubExistence(hubId, hubExistenceChecker);
 
     return Vendor.builder()
         .hubId(hubId)
-        .owner(requestId)
+        .owner(Owner.of(ownerId, ownerName))
         .name(name)
         .type(type)
         .description(description)
-        .address(address)
+        .address(Address.of(address, latitude, longitude))
         .build();
   }
 
