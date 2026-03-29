@@ -7,7 +7,6 @@ import com.followme.vendor_server.vendor.domain.VendorRepository;
 import com.followme.vendor_server.vendor.domain.exception.VendorErrorCode;
 import com.followme.vendor_server.vendor.domain.exception.VendorException;
 import com.followme.vendor_server.vendor.domain.service.HubExistenceChecker;
-import com.followme.vendor_server.vendor.domain.service.PermissionChecker;
 import com.followme.vendor_server.vendor.domain.service.ProductPermissionChecker;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
