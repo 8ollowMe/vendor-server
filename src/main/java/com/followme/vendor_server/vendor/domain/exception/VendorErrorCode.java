@@ -32,6 +32,8 @@ public enum VendorErrorCode implements ErrorCode {
   VENDOR_NOT_FOUND("V001", "존재하지 않는 업체 입니다.", HttpStatus.NOT_FOUND),
 
   PRODUCT_INVALID_PRICE("V050", "유효하지 않은 상품 가격입니다.", HttpStatus.BAD_REQUEST),
+  PRODUCT_DUPLICATE_CODE("v051", "중복되는 상품 코드가 존재합니다.", HttpStatus.BAD_REQUEST),
+  PRODUCT_NOT_FOUND("v052", "해당 업체에 존재하지 않는 상품 입니다.", HttpStatus.BAD_REQUEST),
 
   HUB_NOT_FOUND("V101", "존재하지 않는 허브입니다.", HttpStatus.NOT_FOUND),
 
@@ -41,6 +43,7 @@ public enum VendorErrorCode implements ErrorCode {
   VENDOR_REGISTER_FORBIDDEN("V401", "업체 등록 권한이 부족합니다.", HttpStatus.FORBIDDEN),
   PRODUCT_REGISTER_FORBIDDEN("V402", "상품 등록 권한이 부족합니다.", HttpStatus.FORBIDDEN),
   VENDOR_UPDATE_FORBIDDEN("V403", "업체 수정 권한이 부족합니다.", HttpStatus.FORBIDDEN),
+  PRODUCT_UPDATE_FORBIDDEN("V404", "상품 수정 권한이 부족합니다.", HttpStatus.FORBIDDEN),
   ;
 
   private final String code;

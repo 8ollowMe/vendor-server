@@ -5,6 +5,7 @@ import com.followme.vendor_server.vendor.domain.exception.VendorErrorCode;
 import com.followme.vendor_server.vendor.domain.exception.VendorException;
 import com.followme.vendor_server.vendor.domain.service.HubExistenceChecker;
 import com.followme.vendor_server.vendor.domain.service.PermissionChecker;
+import com.followme.vendor_server.vendor.domain.service.ProductCodeValidator;
 import com.followme.vendor_server.vendor.domain.service.ProductPermissionChecker;
 import com.followme.vendor_server.vendor.domain.vo.Address;
 import com.followme.vendor_server.vendor.domain.vo.Owner;
@@ -93,6 +94,16 @@ public class Vendor extends BaseAudit {
     this.type = type;
     this.description = description;
     this.address = address;
+  }
+
+  /**
+   * 업체의 고유 식별자를 UUID 형태로 반환한다.
+   *
+   * @return 업체 UUID
+   * @author 정승현
+   */
+  public UUID toUuid() {
+    return this.id.getId();
   }
 
   /**
@@ -219,7 +230,8 @@ public class Vendor extends BaseAudit {
       Integer price,
       ProductStatus status,
       ProductPermissionChecker productPermissionChecker,
-      HubExistenceChecker hubExistenceChecker) {
+      HubExistenceChecker hubExistenceChecker,
+      ProductCodeValidator productCodeValidator) {
 
     Product product =
         Product.create(
@@ -233,9 +245,60 @@ public class Vendor extends BaseAudit {
             price,
             status,
             productPermissionChecker,
-            hubExistenceChecker);
+            hubExistenceChecker,
+            productCodeValidator);
     this.products.add(product);
     return product;
+  }
+
+  /**
+   * 업체 소속 상품의 정보를 수정한다.
+   *
+   * <p>해당 업체에 속한 상품인지 먼저 확인한 후 수정을 위임한다.
+   *
+   * @param productId 수정할 상품 식별자
+   * @param hubId 수정할 허브 식별자
+   * @param requesterId 수정 요청자 식별자
+   * @param code 수정할 상품 코드
+   * @param name 수정할 상품명
+   * @param price 수정할 가격
+   * @param description 수정할 설명
+   * @param hubExistenceChecker 허브 존재 여부 검증 인터페이스
+   * @param productPermissionChecker 권한 검증 인터페이스
+   * @param productCodeValidator 상품 코드 중복 검증 인터페이스
+   * @return 수정된 상품 엔티티
+   * @throws VendorException 상품을 찾을 수 없거나 검증 실패 시 발생
+   * @author 정승현
+   */
+  public Product updateProductInfo(
+      UUID productId,
+      UUID hubId,
+      UUID requesterId,
+      String code,
+      String name,
+      Integer price,
+      String description,
+      HubExistenceChecker hubExistenceChecker,
+      ProductPermissionChecker productPermissionChecker,
+      ProductCodeValidator productCodeValidator) {
+
+    Product product =
+        this.products.stream()
+            .filter(p -> p.toUuid().equals(productId))
+            .findFirst()
+            .orElseThrow(() -> new VendorException(VendorErrorCode.PRODUCT_NOT_FOUND));
+
+    return product.updateInfo(
+        hubId,
+        this.owner.getId(),
+        requesterId,
+        code,
+        name,
+        price,
+        description,
+        hubExistenceChecker,
+        productPermissionChecker,
+        productCodeValidator);
   }
 
   private static void checkCreatePermission(

@@ -4,6 +4,7 @@ import com.followMe.common.entity.BaseAudit;
 import com.followme.vendor_server.vendor.domain.exception.VendorErrorCode;
 import com.followme.vendor_server.vendor.domain.exception.VendorException;
 import com.followme.vendor_server.vendor.domain.service.HubExistenceChecker;
+import com.followme.vendor_server.vendor.domain.service.ProductCodeValidator;
 import com.followme.vendor_server.vendor.domain.service.ProductPermissionChecker;
 import com.followme.vendor_server.vendor.domain.vo.ProductId;
 import jakarta.persistence.*;
@@ -39,12 +40,22 @@ import lombok.*;
  *
  * <ul>
  *   <li>{@link #create(Vendor, UUID, UUID, UUID, String, String, String, Integer, ProductStatus,
- *       ProductPermissionChecker, HubExistenceChecker)} - 상품 등록
+ *       ProductPermissionChecker, HubExistenceChecker, ProductCodeValidator)} - 상품 등록
+ *   <li>{@link #updateInfo(UUID, UUID, UUID, String, String, Integer, String, HubExistenceChecker,
+ *       ProductPermissionChecker, ProductCodeValidator)} - 상품 정보 수정
  * </ul>
+ *
+ * @author 정승현
  */
 @Entity
 @Getter
-@Table(name = "p_product")
+@Table(
+    name = "p_product",
+    uniqueConstraints = {
+      @UniqueConstraint(
+          name = "uk_vendor_product_code",
+          columnNames = {"vendor_id", "code"})
+    })
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Product extends BaseAudit {
 
@@ -57,7 +68,7 @@ public class Product extends BaseAudit {
   @Column(nullable = false)
   private UUID hubId;
 
-  @Column(length = 50, nullable = false, unique = true)
+  @Column(length = 50, nullable = false)
   private String code;
 
   @Column(nullable = false)
@@ -71,6 +82,16 @@ public class Product extends BaseAudit {
   @Column(nullable = false)
   @Enumerated(EnumType.STRING)
   private ProductStatus status;
+
+  /**
+   * 상품의 고유 식별자를 UUID 형태로 반환한다.
+   *
+   * @return 상품 UUID
+   * @author 정승현
+   */
+  public UUID toUuid() {
+    return this.getId().getId();
+  }
 
   @Builder(access = AccessLevel.PRIVATE)
   private Product(
@@ -101,6 +122,7 @@ public class Product extends BaseAudit {
    *
    * <ul>
    *   <li>상품 가격 유효성 검증
+   *   <li>상품 코드 중복 검증
    *   <li>상품 생성 권한 검증 [MASTER, HUB(담당 허브), VENDOR(본인 업체)]
    *   <li>소속 허브 존재 여부 검증
    * </ul>
@@ -132,9 +154,11 @@ public class Product extends BaseAudit {
       Integer price,
       ProductStatus status,
       ProductPermissionChecker productPermissionChecker,
-      HubExistenceChecker hubExistenceChecker) {
+      HubExistenceChecker hubExistenceChecker,
+      ProductCodeValidator productCodeValidator) {
 
     checkValidPrice(price);
+    checkValidProductCode(vendor.toUuid(), code, null, productCodeValidator);
     checkCreateProductPermission(hubId, ownerId, requesterId, productPermissionChecker);
     checkHubExistence(hubId, hubExistenceChecker);
 
@@ -149,6 +173,60 @@ public class Product extends BaseAudit {
         .build();
   }
 
+  /**
+   * 상품 정보를 수정한다.
+   *
+   * <h2>상품 수정 검증</h2>
+   *
+   * <ul>
+   *   <li>상품 가격 유효성 검증
+   *   <li>소속 허브 존재 여부 검증
+   *   <li>상품 수정 권한 검증 [MASTER, HUB(담당 허브), VENDOR(본인 업체)]
+   *   <li>상품 코드 수정시, 상품 코드 중복 검증
+   * </ul>
+   *
+   * @param hubId 허브 식별자
+   * @param ownerId 업체 대표 식별자
+   * @param requesterId 수정 요청자 식별자
+   * @param code 수정할 상품 코드
+   * @param name 수정할 상품명
+   * @param price 수정할 가격
+   * @param description 수정할 설명
+   * @param hubExistenceChecker 허브 존재 여부 검증 인터페이스
+   * @param productPermissionChecker 권한 검증 인터페이스
+   * @param productCodeValidator 상품 코드 중복 검증 인터페이스
+   * @return 수정된 상품 엔티티
+   * @throws VendorException 검증 실패 시 발생
+   * @author 정승현
+   */
+  public Product updateInfo(
+      UUID hubId,
+      UUID ownerId,
+      UUID requesterId,
+      String code,
+      String name,
+      Integer price,
+      String description,
+      HubExistenceChecker hubExistenceChecker,
+      ProductPermissionChecker productPermissionChecker,
+      ProductCodeValidator productCodeValidator) {
+
+    checkValidPrice(price);
+    checkHubExistence(hubId, hubExistenceChecker);
+    checkUpdateProductPermission(hubId, ownerId, requesterId, productPermissionChecker);
+
+    if (!this.code.equals(code)) {
+      checkValidProductCode(vendor.toUuid(), code, this.toUuid(), productCodeValidator);
+      this.code = code;
+    }
+
+    this.name = name;
+    this.description = description;
+    this.price = price;
+
+    return this;
+  }
+
   private static void checkCreateProductPermission(
       UUID hubId,
       UUID ownerId,
@@ -156,6 +234,16 @@ public class Product extends BaseAudit {
       ProductPermissionChecker productPermissionChecker) {
     if (!productPermissionChecker.hasCreatePermission(hubId, ownerId, requesterId)) {
       throw new VendorException(VendorErrorCode.PRODUCT_REGISTER_FORBIDDEN);
+    }
+  }
+
+  private void checkUpdateProductPermission(
+      UUID hubId,
+      UUID ownerId,
+      UUID requesterId,
+      ProductPermissionChecker productPermissionChecker) {
+    if (!productPermissionChecker.hasUpdatePermission(hubId, ownerId, requesterId)) {
+      throw new VendorException(VendorErrorCode.PRODUCT_UPDATE_FORBIDDEN);
     }
   }
 
@@ -168,6 +256,16 @@ public class Product extends BaseAudit {
   private static void checkValidPrice(Integer price) {
     if (price < 0) {
       throw new VendorException(VendorErrorCode.PRODUCT_INVALID_PRICE);
+    }
+  }
+
+  private static void checkValidProductCode(
+      UUID vendorId,
+      String code,
+      UUID excludeProductId,
+      ProductCodeValidator productCodeValidator) {
+    if (productCodeValidator.isCodeDuplicated(vendorId, code, excludeProductId)) {
+      throw new VendorException(VendorErrorCode.PRODUCT_DUPLICATE_CODE);
     }
   }
 }

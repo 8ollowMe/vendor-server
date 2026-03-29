@@ -12,4 +12,9 @@ public class ProductPermissionCheckerImpl implements ProductPermissionChecker {
   public boolean hasCreatePermission(UUID hubId, UUID requestId, UUID requesterId) {
     return true;
   }
+
+  @Override
+  public boolean hasUpdatePermission(UUID hubId, UUID ownerId, UUID requesterId) {
+    return true;
+  }
 }
