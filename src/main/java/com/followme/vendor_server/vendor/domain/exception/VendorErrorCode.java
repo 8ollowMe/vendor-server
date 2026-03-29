@@ -35,9 +35,12 @@ public enum VendorErrorCode implements ErrorCode {
 
   HUB_NOT_FOUND("V101", "존재하지 않는 허브입니다.", HttpStatus.NOT_FOUND),
 
+  USER_INVALID_TYPE("V301", "옳바르지않은 유저 타입입니다.", HttpStatus.BAD_REQUEST),
+
   /** 권한 관련 에러 */
   VENDOR_REGISTER_FORBIDDEN("V401", "업체 등록 권한이 부족합니다.", HttpStatus.FORBIDDEN),
   PRODUCT_REGISTER_FORBIDDEN("V402", "상품 등록 권한이 부족합니다.", HttpStatus.FORBIDDEN),
+  VENDOR_UPDATE_FORBIDDEN("V403", "업체 수정 권한이 부족합니다.", HttpStatus.FORBIDDEN),
   ;
 
   private final String code;

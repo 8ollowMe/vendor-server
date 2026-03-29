@@ -11,4 +11,9 @@ public class PermissionCheckerImpl implements PermissionChecker {
   public boolean hasCreatePermission(UUID hubId, UUID requestId) {
     return true;
   }
+
+  @Override
+  public boolean hasUpdatePermission(UUID hubId, UUID requestId) {
+    return true;
+  }
 }

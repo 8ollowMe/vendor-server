@@ -44,6 +44,8 @@ import lombok.*;
  * <ul>
  *   <li>{@link #create(UUID, UUID, String, String, VendorType, String, String, Double, Double,
  *       PermissionChecker, HubExistenceChecker)} - 업체 등록
+ *   <li>{@link #updateInfo(UUID, UUID, String, VendorType, String, UUID, String, String, Double,
+ *       Double, PermissionChecker, HubExistenceChecker)} - 업체 정보 수정
  * </ul>
  *
  * @author 정승현
@@ -151,6 +153,64 @@ public class Vendor extends BaseAudit {
         .build();
   }
 
+  /**
+   * 업체 정보를 수정 한다.
+   *
+   * <p>권한 검증 실패 시 {@link VendorException} 발생
+   *
+   * <p>잘못된 인자로 생성 요청 시 {@link IllegalArgumentException} 발생
+   *
+   * <h2>업체 수정 검증</h2>
+   *
+   * <ul>
+   *   <li>허브 존재 유무 검증
+   *   <li>업체 수정 권한 검증
+   *   <li>업체 대표 수정 시, 수정하려는 유저 권한 검증
+   * </ul>
+   *
+   * @param hubId 소속 허브 식별자
+   * @param requestId 수정 요청을 한 사용자 식별자
+   * @param name 수정할 업체 이름
+   * @param type 수정할 업체 종류 [SUPPLIER, BUYER]
+   * @param description 수정할 업체 설명
+   * @param ownerId 수정할 대표 사용자 식별자
+   * @param ownerName 수정할 대표 사용자 이름
+   * @param address 수정할 업체 주소
+   * @param latitude 수정할 주소 경도 값
+   * @param longitude 수정할 주소 위도 값
+   * @param permissionChecker 권한 검증 인터페이스
+   * @param hubExistenceChecker 허브 존재 여부 검증 인터페이스
+   * @throws VendorException 비즈니스 로직 에러
+   * @throws IllegalArgumentException 잘못된 인자 에러
+   * @author 정승현
+   */
+  public void updateInfo(
+      UUID hubId,
+      UUID requestId,
+      String name,
+      VendorType type,
+      String description,
+      UUID ownerId,
+      String ownerName,
+      String address,
+      Double latitude,
+      Double longitude,
+      PermissionChecker permissionChecker,
+      HubExistenceChecker hubExistenceChecker) {
+
+    checkHubExistence(hubId, hubExistenceChecker);
+    checkUpdatePermission(hubId, requestId, permissionChecker);
+
+    if (!this.owner.getId().equals(ownerId)) {
+      checkUpdatePermission(hubId, ownerId, permissionChecker);
+      this.owner = Owner.of(ownerId, ownerName);
+    }
+    this.name = name;
+    this.type = type;
+    this.description = description;
+    this.address = Address.of(address, latitude, longitude);
+  }
+
   public Product addProduct(
       UUID requesterId,
       String code,
@@ -182,6 +242,13 @@ public class Vendor extends BaseAudit {
       UUID hubId, UUID requestId, PermissionChecker permissionChecker) {
     if (!permissionChecker.hasCreatePermission(hubId, requestId)) {
       throw new VendorException(VendorErrorCode.VENDOR_REGISTER_FORBIDDEN);
+    }
+  }
+
+  private void checkUpdatePermission(
+      UUID hubId, UUID requestId, PermissionChecker permissionChecker) {
+    if (!permissionChecker.hasUpdatePermission(hubId, requestId)) {
+      throw new VendorException(VendorErrorCode.VENDOR_UPDATE_FORBIDDEN);
     }
   }
 

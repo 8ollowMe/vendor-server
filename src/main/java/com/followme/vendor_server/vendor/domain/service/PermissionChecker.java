@@ -11,4 +11,6 @@ import java.util.UUID;
  */
 public interface PermissionChecker {
   boolean hasCreatePermission(UUID hubId, UUID requestId);
+
+  boolean hasUpdatePermission(UUID hubId, UUID requestId);
 }
