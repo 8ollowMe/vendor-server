@@ -5,7 +5,7 @@ import java.util.UUID;
 
 public interface VendorRepository {
 
-  Optional<Vendor> findById(UUID id);
+  Optional<Vendor> findById(UUID vendorId);
 
   Vendor save(Vendor vendor);
 }
