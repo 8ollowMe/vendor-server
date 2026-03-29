@@ -222,6 +222,23 @@ public class Vendor extends BaseAudit {
     this.address = Address.of(address, latitude, longitude);
   }
 
+  /**
+   * 업체에 새로운 상품을 등록한다.
+   *
+   * <p>상품 생성은 상품을 직접 생성하지않고, 업체를 통해서만 생성한다.
+   *
+   * @param requesterId 등록 요청자 식별자
+   * @param code 상품 코드
+   * @param name 상품명
+   * @param description 상품 설명
+   * @param price 가격
+   * @param status 상품 상태
+   * @param productPermissionChecker 권한 검증 인터페이스
+   * @param hubExistenceChecker 허브 존재 여부 검증 인터페이스
+   * @param productCodeValidator 상품 코드 중복 검증 인터페이스
+   * @return 등록된 상품 엔티티
+   * @author 정승현
+   */
   public Product addProduct(
       UUID requesterId,
       String code,
