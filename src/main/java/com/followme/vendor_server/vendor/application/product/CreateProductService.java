@@ -7,6 +7,7 @@ import com.followme.vendor_server.vendor.domain.VendorRepository;
 import com.followme.vendor_server.vendor.domain.exception.VendorErrorCode;
 import com.followme.vendor_server.vendor.domain.exception.VendorException;
 import com.followme.vendor_server.vendor.domain.service.HubExistenceChecker;
+import com.followme.vendor_server.vendor.domain.service.ProductCodeValidator;
 import com.followme.vendor_server.vendor.domain.service.ProductPermissionChecker;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,7 @@ public class CreateProductService {
   private final VendorRepository vendorRepository;
   private final ProductPermissionChecker productPermissionChecker;
   private final HubExistenceChecker hubExistenceChecker;
+  private final ProductCodeValidator productCodeValidator;
 
   /** TODO: result 값 수정 */
   public Product create(CreateProductCommand command) {
@@ -38,7 +40,8 @@ public class CreateProductService {
             command.getPrice(),
             command.getStatus(),
             productPermissionChecker,
-            hubExistenceChecker);
+            hubExistenceChecker,
+            productCodeValidator);
 
     vendorRepository.save(vendor);
     log.info("Created product with id {}", product.getId());
