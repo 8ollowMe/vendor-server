@@ -143,7 +143,7 @@ public class Product extends BaseAudit {
    * @throws IllegalArgumentException 잘못된 인자로 생성 요청 시 발생
    * @author 정승현
    */
-  public static Product create(
+  protected static Product create(
       Vendor vendor,
       UUID hubId,
       UUID ownerId,
@@ -199,7 +199,7 @@ public class Product extends BaseAudit {
    * @throws VendorException 검증 실패 시 발생
    * @author 정승현
    */
-  public Product updateInfo(
+  protected Product updateInfo(
       UUID hubId,
       UUID ownerId,
       UUID requesterId,
@@ -224,6 +224,20 @@ public class Product extends BaseAudit {
     this.description = description;
     this.price = price;
 
+    return this;
+  }
+
+  protected Product updateStatus(
+      UUID hubId,
+      UUID requesterId,
+      UUID ownerId,
+      ProductStatus status,
+      HubExistenceChecker hubExistenceChecker,
+      ProductPermissionChecker productPermissionChecker) {
+
+    checkHubExistence(hubId, hubExistenceChecker);
+    checkUpdateProductPermission(hubId, ownerId, requesterId, productPermissionChecker);
+    this.status = status;
     return this;
   }
 

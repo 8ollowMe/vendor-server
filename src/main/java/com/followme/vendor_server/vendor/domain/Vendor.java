@@ -274,7 +274,6 @@ public class Vendor extends BaseAudit {
    * <p>해당 업체에 속한 상품인지 먼저 확인한 후 수정을 위임한다.
    *
    * @param productId 수정할 상품 식별자
-   * @param hubId 수정할 허브 식별자
    * @param requesterId 수정 요청자 식별자
    * @param code 수정할 상품 코드
    * @param name 수정할 상품명
@@ -289,7 +288,6 @@ public class Vendor extends BaseAudit {
    */
   public Product updateProductInfo(
       UUID productId,
-      UUID hubId,
       UUID requesterId,
       String code,
       String name,
@@ -306,7 +304,7 @@ public class Vendor extends BaseAudit {
             .orElseThrow(() -> new VendorException(VendorErrorCode.PRODUCT_NOT_FOUND));
 
     return product.updateInfo(
-        hubId,
+        this.hubId,
         this.owner.getId(),
         requesterId,
         code,
@@ -316,6 +314,27 @@ public class Vendor extends BaseAudit {
         hubExistenceChecker,
         productPermissionChecker,
         productCodeValidator);
+  }
+
+  public Product updateProductStatus(
+      UUID productId,
+      UUID requesterId,
+      ProductStatus status,
+      HubExistenceChecker hubExistenceChecker,
+      ProductPermissionChecker productPermissionChecker) {
+    Product product =
+        this.products.stream()
+            .filter(p -> p.toUuid().equals(productId))
+            .findFirst()
+            .orElseThrow(() -> new VendorException(VendorErrorCode.PRODUCT_NOT_FOUND));
+
+    return product.updateStatus(
+        this.hubId,
+        requesterId,
+        this.owner.getId(),
+        status,
+        hubExistenceChecker,
+        productPermissionChecker);
   }
 
   private static void checkCreatePermission(
