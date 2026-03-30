@@ -18,8 +18,8 @@ public class VendorRepositoryImpl implements VendorRepository {
   }
 
   @Override
-  public Optional<Vendor> findByWithProducts(UUID vendorId) {
-    return vendorJpaRepository.findByWithProducts(vendorId);
+  public Optional<Vendor> findByIdWithProducts(UUID vendorId) {
+    return vendorJpaRepository.findByIdWithProducts(vendorId);
   }
 
   @Override
