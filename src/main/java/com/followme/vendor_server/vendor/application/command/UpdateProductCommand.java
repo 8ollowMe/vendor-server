@@ -16,9 +16,6 @@ public class UpdateProductCommand {
   @NotNull(message = "상품 ID는 필수입니다.")
   private UUID productId;
 
-  @NotNull(message = "허브 ID는 필수입니다.")
-  private UUID hubId;
-
   @NotNull(message = "요청자 ID는 필수입니다.")
   private UUID requesterId;
 
