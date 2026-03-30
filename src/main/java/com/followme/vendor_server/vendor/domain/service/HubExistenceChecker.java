@@ -1,4 +1,4 @@
-package com.followme.vendor_server.vendor.domain.service;
+package com.followMe.vendor_server.vendor.domain.service;
 
 import java.util.UUID;
 

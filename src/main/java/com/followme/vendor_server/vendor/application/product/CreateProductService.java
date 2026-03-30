@@ -1,14 +1,14 @@
-package com.followme.vendor_server.vendor.application.product;
+package com.followMe.vendor_server.vendor.application.product;
 
-import com.followme.vendor_server.vendor.application.command.CreateProductCommand;
-import com.followme.vendor_server.vendor.domain.Product;
-import com.followme.vendor_server.vendor.domain.Vendor;
-import com.followme.vendor_server.vendor.domain.VendorRepository;
-import com.followme.vendor_server.vendor.domain.exception.VendorErrorCode;
-import com.followme.vendor_server.vendor.domain.exception.VendorException;
-import com.followme.vendor_server.vendor.domain.service.HubExistenceChecker;
-import com.followme.vendor_server.vendor.domain.service.ProductCodeValidator;
-import com.followme.vendor_server.vendor.domain.service.ProductPermissionChecker;
+import com.followMe.vendor_server.vendor.application.command.CreateProductCommand;
+import com.followMe.vendor_server.vendor.domain.Product;
+import com.followMe.vendor_server.vendor.domain.Vendor;
+import com.followMe.vendor_server.vendor.domain.VendorRepository;
+import com.followMe.vendor_server.vendor.domain.exception.VendorErrorCode;
+import com.followMe.vendor_server.vendor.domain.exception.VendorException;
+import com.followMe.vendor_server.vendor.domain.service.HubExistenceChecker;
+import com.followMe.vendor_server.vendor.domain.service.ProductCodeValidator;
+import com.followMe.vendor_server.vendor.domain.service.ProductPermissionChecker;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

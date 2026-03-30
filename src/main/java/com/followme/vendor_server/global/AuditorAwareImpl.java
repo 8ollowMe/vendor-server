@@ -1,4 +1,4 @@
-package com.followme.vendor_server.global;
+package com.followMe.vendor_server.global;
 
 import java.util.Optional;
 import org.springframework.data.domain.AuditorAware;

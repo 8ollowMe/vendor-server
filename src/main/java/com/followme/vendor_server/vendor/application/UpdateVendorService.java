@@ -1,12 +1,12 @@
-package com.followme.vendor_server.vendor.application;
+package com.followMe.vendor_server.vendor.application;
 
-import com.followme.vendor_server.vendor.application.command.UpdateVendorCommand;
-import com.followme.vendor_server.vendor.domain.Vendor;
-import com.followme.vendor_server.vendor.domain.VendorRepository;
-import com.followme.vendor_server.vendor.domain.exception.VendorErrorCode;
-import com.followme.vendor_server.vendor.domain.exception.VendorException;
-import com.followme.vendor_server.vendor.domain.service.HubExistenceChecker;
-import com.followme.vendor_server.vendor.domain.service.PermissionChecker;
+import com.followMe.vendor_server.vendor.application.command.UpdateVendorCommand;
+import com.followMe.vendor_server.vendor.domain.Vendor;
+import com.followMe.vendor_server.vendor.domain.VendorRepository;
+import com.followMe.vendor_server.vendor.domain.exception.VendorErrorCode;
+import com.followMe.vendor_server.vendor.domain.exception.VendorException;
+import com.followMe.vendor_server.vendor.domain.service.HubExistenceChecker;
+import com.followMe.vendor_server.vendor.domain.service.PermissionChecker;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

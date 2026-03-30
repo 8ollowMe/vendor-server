@@ -1,7 +1,7 @@
-package com.followme.vendor_server.vendor.infrastructure;
+package com.followMe.vendor_server.vendor.infrastructure;
 
-import com.followme.vendor_server.vendor.domain.service.ProductCodeValidator;
-import com.followme.vendor_server.vendor.infrastructure.repository.ProductJpaRepository;
+import com.followMe.vendor_server.vendor.domain.service.ProductCodeValidator;
+import com.followMe.vendor_server.vendor.infrastructure.repository.ProductJpaRepository;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;

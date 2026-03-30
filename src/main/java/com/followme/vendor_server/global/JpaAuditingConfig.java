@@ -1,4 +1,4 @@
-package com.followme.vendor_server.global;
+package com.followMe.vendor_server.global;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

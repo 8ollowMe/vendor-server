@@ -1,15 +1,15 @@
-package com.followme.vendor_server.vendor.domain;
+package com.followMe.vendor_server.vendor.domain;
 
 import com.followMe.common.entity.BaseAudit;
-import com.followme.vendor_server.vendor.domain.exception.VendorErrorCode;
-import com.followme.vendor_server.vendor.domain.exception.VendorException;
-import com.followme.vendor_server.vendor.domain.service.HubExistenceChecker;
-import com.followme.vendor_server.vendor.domain.service.PermissionChecker;
-import com.followme.vendor_server.vendor.domain.service.ProductCodeValidator;
-import com.followme.vendor_server.vendor.domain.service.ProductPermissionChecker;
-import com.followme.vendor_server.vendor.domain.vo.Address;
-import com.followme.vendor_server.vendor.domain.vo.Owner;
-import com.followme.vendor_server.vendor.domain.vo.VendorId;
+import com.followMe.vendor_server.vendor.domain.exception.VendorErrorCode;
+import com.followMe.vendor_server.vendor.domain.exception.VendorException;
+import com.followMe.vendor_server.vendor.domain.service.HubExistenceChecker;
+import com.followMe.vendor_server.vendor.domain.service.PermissionChecker;
+import com.followMe.vendor_server.vendor.domain.service.ProductCodeValidator;
+import com.followMe.vendor_server.vendor.domain.service.ProductPermissionChecker;
+import com.followMe.vendor_server.vendor.domain.vo.Address;
+import com.followMe.vendor_server.vendor.domain.vo.Owner;
+import com.followMe.vendor_server.vendor.domain.vo.VendorId;
 import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;

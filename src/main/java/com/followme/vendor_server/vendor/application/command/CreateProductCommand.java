@@ -1,6 +1,6 @@
-package com.followme.vendor_server.vendor.application.command;
+package com.followMe.vendor_server.vendor.application.command;
 
-import com.followme.vendor_server.vendor.domain.ProductStatus;
+import com.followMe.vendor_server.vendor.domain.ProductStatus;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -1,6 +1,6 @@
-package com.followme.vendor_server.vendor.infrastructure.repository;
+package com.followMe.vendor_server.vendor.infrastructure.repository;
 
-import com.followme.vendor_server.vendor.domain.Product;
+import com.followMe.vendor_server.vendor.domain.Product;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 

@@ -1,12 +1,12 @@
-package com.followme.vendor_server.vendor.domain;
+package com.followMe.vendor_server.vendor.domain;
 
 import com.followMe.common.entity.BaseAudit;
-import com.followme.vendor_server.vendor.domain.exception.VendorErrorCode;
-import com.followme.vendor_server.vendor.domain.exception.VendorException;
-import com.followme.vendor_server.vendor.domain.service.HubExistenceChecker;
-import com.followme.vendor_server.vendor.domain.service.ProductCodeValidator;
-import com.followme.vendor_server.vendor.domain.service.ProductPermissionChecker;
-import com.followme.vendor_server.vendor.domain.vo.ProductId;
+import com.followMe.vendor_server.vendor.domain.exception.VendorErrorCode;
+import com.followMe.vendor_server.vendor.domain.exception.VendorException;
+import com.followMe.vendor_server.vendor.domain.service.HubExistenceChecker;
+import com.followMe.vendor_server.vendor.domain.service.ProductCodeValidator;
+import com.followMe.vendor_server.vendor.domain.service.ProductPermissionChecker;
+import com.followMe.vendor_server.vendor.domain.vo.ProductId;
 import jakarta.persistence.*;
 import java.util.UUID;
 import lombok.*;

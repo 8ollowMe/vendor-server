@@ -1,4 +1,4 @@
-package com.followme.vendor_server.vendor.application.command;
+package com.followMe.vendor_server.vendor.application.command;
 
 import jakarta.validation.constraints.*;
 import java.util.UUID;

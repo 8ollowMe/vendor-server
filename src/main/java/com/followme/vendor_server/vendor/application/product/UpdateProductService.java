@@ -1,18 +1,18 @@
-package com.followme.vendor_server.vendor.application.product;
+package com.followMe.vendor_server.vendor.application.product;
 
-import static com.followme.vendor_server.vendor.application.command.BulkUpdateProductStatusCommand.ProductStatusUpdateItem;
+import static com.followMe.vendor_server.vendor.application.command.BulkUpdateProductStatusCommand.ProductStatusUpdateItem;
 
-import com.followme.vendor_server.vendor.application.command.BulkUpdateProductStatusCommand;
-import com.followme.vendor_server.vendor.application.command.UpdateProductCommand;
-import com.followme.vendor_server.vendor.application.command.UpdateProductStatusCommand;
-import com.followme.vendor_server.vendor.domain.Product;
-import com.followme.vendor_server.vendor.domain.Vendor;
-import com.followme.vendor_server.vendor.domain.VendorRepository;
-import com.followme.vendor_server.vendor.domain.exception.VendorErrorCode;
-import com.followme.vendor_server.vendor.domain.exception.VendorException;
-import com.followme.vendor_server.vendor.domain.service.HubExistenceChecker;
-import com.followme.vendor_server.vendor.domain.service.ProductCodeValidator;
-import com.followme.vendor_server.vendor.domain.service.ProductPermissionChecker;
+import com.followMe.vendor_server.vendor.application.command.BulkUpdateProductStatusCommand;
+import com.followMe.vendor_server.vendor.application.command.UpdateProductCommand;
+import com.followMe.vendor_server.vendor.application.command.UpdateProductStatusCommand;
+import com.followMe.vendor_server.vendor.domain.Product;
+import com.followMe.vendor_server.vendor.domain.Vendor;
+import com.followMe.vendor_server.vendor.domain.VendorRepository;
+import com.followMe.vendor_server.vendor.domain.exception.VendorErrorCode;
+import com.followMe.vendor_server.vendor.domain.exception.VendorException;
+import com.followMe.vendor_server.vendor.domain.service.HubExistenceChecker;
+import com.followMe.vendor_server.vendor.domain.service.ProductCodeValidator;
+import com.followMe.vendor_server.vendor.domain.service.ProductPermissionChecker;
 import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.Map;

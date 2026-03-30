@@ -1,6 +1,6 @@
-package com.followme.vendor_server.vendor.application.command;
+package com.followMe.vendor_server.vendor.application.command;
 
-import com.followme.vendor_server.vendor.domain.VendorType;
+import com.followMe.vendor_server.vendor.domain.VendorType;
 import jakarta.validation.constraints.*;
 import java.util.UUID;
 import lombok.AllArgsConstructor;

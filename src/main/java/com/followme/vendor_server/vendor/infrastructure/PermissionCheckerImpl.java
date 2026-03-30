@@ -1,6 +1,6 @@
-package com.followme.vendor_server.vendor.infrastructure;
+package com.followMe.vendor_server.vendor.infrastructure;
 
-import com.followme.vendor_server.vendor.domain.service.PermissionChecker;
+import com.followMe.vendor_server.vendor.domain.service.PermissionChecker;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
 

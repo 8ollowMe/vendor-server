@@ -1,4 +1,4 @@
-package com.followme.vendor_server.vendor.domain;
+package com.followMe.vendor_server.vendor.domain;
 
 import java.util.Collection;
 import java.util.Optional;

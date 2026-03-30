@@ -1,6 +1,6 @@
-package com.followme.vendor_server.vendor.infrastructure.repository;
+package com.followMe.vendor_server.vendor.infrastructure.repository;
 
-import com.followme.vendor_server.vendor.domain.Vendor;
+import com.followMe.vendor_server.vendor.domain.Vendor;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
