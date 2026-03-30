@@ -27,7 +27,7 @@ public class UpdateProductService {
   public Product updateProduct(UpdateProductCommand command) {
     Vendor vendor =
         vendorRepository
-            .findById(command.getVendorId())
+            .findByWithProducts(command.getVendorId())
             .orElseThrow(() -> new VendorException(VendorErrorCode.VENDOR_NOT_FOUND));
 
     Product product =
