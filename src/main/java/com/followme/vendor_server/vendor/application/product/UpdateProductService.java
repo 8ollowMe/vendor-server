@@ -1,6 +1,7 @@
 package com.followme.vendor_server.vendor.application.product;
 
 import com.followme.vendor_server.vendor.application.command.UpdateProductCommand;
+import com.followme.vendor_server.vendor.application.command.UpdateProductStatusCommand;
 import com.followme.vendor_server.vendor.domain.Product;
 import com.followme.vendor_server.vendor.domain.Vendor;
 import com.followme.vendor_server.vendor.domain.VendorRepository;
@@ -27,13 +28,12 @@ public class UpdateProductService {
   public Product updateProduct(UpdateProductCommand command) {
     Vendor vendor =
         vendorRepository
-            .findByWithProducts(command.getVendorId())
+            .findByIdWithProducts(command.getVendorId())
             .orElseThrow(() -> new VendorException(VendorErrorCode.VENDOR_NOT_FOUND));
 
     Product product =
         vendor.updateProductInfo(
             command.getProductId(),
-            command.getHubId(),
             command.getRequesterId(),
             command.getCode(),
             command.getName(),
@@ -45,6 +45,27 @@ public class UpdateProductService {
 
     /** TODO: updatedEvent 발행, outbox 를 하나의 트랜잭션으로 관리하는 기능 추가 해야 됨 */
     log.info("Updated product with id {}", product.getId());
+
+    return product;
+  }
+
+  public Product updateProductStatus(UpdateProductStatusCommand command) {
+    Vendor vendor =
+        vendorRepository
+            .findByIdWithProducts(command.getVendorId())
+            .orElseThrow(() -> new VendorException(VendorErrorCode.VENDOR_NOT_FOUND));
+
+    Product product =
+        vendor.updateProductStatus(
+            command.getProductId(),
+            command.getRequesterId(),
+            command.getStatus(),
+            hubExistenceChecker,
+            productPermissionChecker);
+
+    /** TODO: statusUpdatedEvent 발행 및 Outbox 저장 로직 추가 필요 */
+    log.info(
+        "Updated product status to {} for product id {}", command.getStatus(), product.getId());
 
     return product;
   }
