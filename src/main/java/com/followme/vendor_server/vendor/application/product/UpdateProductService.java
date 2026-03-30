@@ -1,5 +1,8 @@
 package com.followme.vendor_server.vendor.application.product;
 
+import static com.followme.vendor_server.vendor.application.command.BulkUpdateProductStatusCommand.ProductStatusUpdateItem;
+
+import com.followme.vendor_server.vendor.application.command.BulkUpdateProductStatusCommand;
 import com.followme.vendor_server.vendor.application.command.UpdateProductCommand;
 import com.followme.vendor_server.vendor.application.command.UpdateProductStatusCommand;
 import com.followme.vendor_server.vendor.domain.Product;
@@ -11,6 +14,10 @@ import com.followme.vendor_server.vendor.domain.service.HubExistenceChecker;
 import com.followme.vendor_server.vendor.domain.service.ProductCodeValidator;
 import com.followme.vendor_server.vendor.domain.service.ProductPermissionChecker;
 import jakarta.transaction.Transactional;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -68,5 +75,41 @@ public class UpdateProductService {
         "Updated product status to {} for product id {}", command.getStatus(), product.getId());
 
     return product;
+  }
+
+  public void bulkUpdateProductStatus(BulkUpdateProductStatusCommand command) {
+
+    checkDuplicateProductId(command.getItems());
+
+    Map<UUID, List<ProductStatusUpdateItem>> itemsByVendor =
+        command.getItems().stream()
+            .collect(Collectors.groupingBy(ProductStatusUpdateItem::getVendorId));
+
+    List<Vendor> vendors =
+        vendorRepository.findAllByIdWithProducts(itemsByVendor.keySet()).stream().toList();
+
+    for (Vendor vendor : vendors) {
+      List<ProductStatusUpdateItem> vendorItems = itemsByVendor.get(vendor.toUuid());
+      if (vendorItems == null) continue;
+
+      for (ProductStatusUpdateItem item : vendorItems) {
+        vendor.updateProductStatus(
+            item.getProductId(),
+            command.getRequesterId(),
+            item.getStatus(),
+            hubExistenceChecker,
+            productPermissionChecker);
+      }
+    }
+    log.info(
+        "Bulk updated {} products across {} vendors", command.getItems().size(), vendors.size());
+  }
+
+  private void checkDuplicateProductId(List<ProductStatusUpdateItem> items) {
+    long uniqueCount = items.stream().map(ProductStatusUpdateItem::getProductId).distinct().count();
+
+    if (uniqueCount != items.size()) {
+      throw new VendorException(VendorErrorCode.PRODUCT_DUPLICATE_UPDATE_REQUEST);
+    }
   }
 }
