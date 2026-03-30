@@ -1,5 +1,6 @@
 package com.followMe.vendor_server.global;
 
+import java.util.UUID;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.AuditorAware;
@@ -10,7 +11,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 public class JpaAuditingConfig {
 
   @Bean
-  public AuditorAware<String> auditorProvider() {
+  public AuditorAware<UUID> auditorProvider() {
     return new AuditorAwareImpl();
   }
 }
