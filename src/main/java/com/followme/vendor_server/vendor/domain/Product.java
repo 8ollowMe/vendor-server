@@ -158,7 +158,7 @@ public class Product extends BaseAudit {
       ProductCodeValidator productCodeValidator) {
 
     checkValidPrice(price);
-    checkValidProductCode(vendor.toUuid(), code, null, productCodeValidator);
+    checkValidProductCode(vendor.toUuid(), code, productCodeValidator);
     checkCreateProductPermission(hubId, ownerId, requesterId, productPermissionChecker);
     checkHubExistence(hubId, hubExistenceChecker);
 
@@ -216,7 +216,7 @@ public class Product extends BaseAudit {
     checkUpdateProductPermission(hubId, ownerId, requesterId, productPermissionChecker);
 
     if (!this.code.equals(code)) {
-      checkValidProductCode(vendor.toUuid(), code, this.toUuid(), productCodeValidator);
+      checkValidProductCode(vendor.toUuid(), code, productCodeValidator);
       this.code = code;
     }
 
@@ -260,11 +260,8 @@ public class Product extends BaseAudit {
   }
 
   private static void checkValidProductCode(
-      UUID vendorId,
-      String code,
-      UUID excludeProductId,
-      ProductCodeValidator productCodeValidator) {
-    if (productCodeValidator.isCodeDuplicated(vendorId, code, excludeProductId)) {
+      UUID vendorId, String code, ProductCodeValidator productCodeValidator) {
+    if (productCodeValidator.isCodeDuplicated(vendorId, code)) {
       throw new VendorException(VendorErrorCode.PRODUCT_DUPLICATE_CODE);
     }
   }
