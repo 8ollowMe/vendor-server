@@ -13,4 +13,6 @@ public interface PermissionChecker {
   boolean hasCreatePermission(UUID hubId, UUID requestId);
 
   boolean hasUpdatePermission(UUID hubId, UUID requestId);
+
+  boolean hasDeletePermission(UUID hubId, UUID requestId);
 }

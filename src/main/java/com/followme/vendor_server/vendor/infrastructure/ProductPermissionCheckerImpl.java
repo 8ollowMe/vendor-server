@@ -17,4 +17,9 @@ public class ProductPermissionCheckerImpl implements ProductPermissionChecker {
   public boolean hasUpdatePermission(UUID hubId, UUID ownerId, UUID requesterId) {
     return true;
   }
+
+  @Override
+  public boolean hasDeletePermission(UUID hubId, UUID ownerId, UUID requesterId) {
+    return true;
+  }
 }

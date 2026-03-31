@@ -241,6 +241,40 @@ public class Product extends BaseAudit {
     return this;
   }
 
+  /**
+   * 상품을 삭제한다.
+   *
+   * <p><o>상품삭제는 반드시 업체를 통해서 이루어져야 한다.
+   *
+   * <h2>상품 삭제 검증</h2>
+   *
+   * <ul>
+   *   <li>상품 삭제 권한 검증
+   * </ul>
+   *
+   * @param hubId 업체가 소속된 허브
+   * @param ownerId 업체의 대표 식별자
+   * @param requesterId 삭제 요청을 한 사용자 식별자
+   * @param productPermissionChecker 상품 권한 검증 인터페이스
+   */
+  protected void delete(
+      UUID hubId,
+      UUID ownerId,
+      UUID requesterId,
+      ProductPermissionChecker productPermissionChecker) {
+    checkDeleteProductPermission(hubId, ownerId, requesterId, productPermissionChecker);
+    this.softDelete();
+  }
+
+  /**
+   * 업체가 삭제되면, 업체가 등록한 상품도 같이 삭제 된다.
+   *
+   * <p>업체를 삭제하는 행위는 업체에서 유효성 검사를 하기때문에 상품 도메인에서는 추가 검증을 하지않는다.
+   */
+  protected void cascadeDelete() {
+    this.softDelete();
+  }
+
   private static void checkCreateProductPermission(
       UUID hubId,
       UUID ownerId,
@@ -258,6 +292,16 @@ public class Product extends BaseAudit {
       ProductPermissionChecker productPermissionChecker) {
     if (!productPermissionChecker.hasUpdatePermission(hubId, ownerId, requesterId)) {
       throw new VendorException(VendorErrorCode.PRODUCT_UPDATE_FORBIDDEN);
+    }
+  }
+
+  private void checkDeleteProductPermission(
+      UUID hubId,
+      UUID ownerId,
+      UUID requesterId,
+      ProductPermissionChecker productPermissionChecker) {
+    if (!productPermissionChecker.hasDeletePermission(hubId, ownerId, requesterId)) {
+      throw new VendorException(VendorErrorCode.PRODUCT_DELETE_FORBIDDEN);
     }
   }
 

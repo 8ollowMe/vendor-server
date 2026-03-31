@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import lombok.*;
+import org.hibernate.annotations.SQLRestriction;
 
 /**
  * 업체(Vendor) 도메인 엔티티
@@ -55,6 +56,7 @@ import lombok.*;
 @Getter
 @Table(name = "p_vendor")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@SQLRestriction("deleted_at IS NULL")
 public class Vendor extends BaseAudit {
 
   @EmbeddedId private VendorId id;
@@ -223,6 +225,28 @@ public class Vendor extends BaseAudit {
   }
 
   /**
+   * 업체를 삭제한다.
+   *
+   * <p>삭제는 기본적으로 soft delete 를 하며, 업체에 등록된 모든 상품도 soft delete 된다.
+   *
+   * <h2>업체 삭제 검증</h2>
+   *
+   * <ul>
+   *   <li>업체 삭제 권한 검증
+   * </ul>
+   *
+   * @param requesterId - 삭제 요청을 한 사용자 식별자
+   * @param permissionChecker - 권한 검증 인터페이스
+   */
+  public void delete(UUID requesterId, PermissionChecker permissionChecker) {
+
+    checkDeletePermission(this.hubId, requesterId, permissionChecker);
+
+    products.forEach(Product::cascadeDelete);
+    this.softDelete();
+  }
+
+  /**
    * 업체에 새로운 상품을 등록한다.
    *
    * <p>상품 생성은 상품을 직접 생성하지않고, 업체를 통해서만 생성한다.
@@ -337,6 +361,28 @@ public class Vendor extends BaseAudit {
         productPermissionChecker);
   }
 
+  /**
+   * 업체의 상품을 삭제한다.
+   *
+   * <p>상품의 삭제는 반드시 업체를 통해서 삭제해야 한다.
+   *
+   * <p>상품 삭제이기에 상품에 대한 유효성 검증은 상품 도메인에 위임한다.
+   *
+   * @param productId 상품 식별자
+   * @param requesterId 상풍 삭제를 요청한 사용자 식별자
+   * @param productPermissionChecker 상품 권한 검증 인터페이스
+   */
+  public void deleteProduct(
+      UUID productId, UUID requesterId, ProductPermissionChecker productPermissionChecker) {
+    Product product =
+        this.products.stream()
+            .filter(p -> p.toUuid().equals(productId))
+            .findFirst()
+            .orElseThrow(() -> new VendorException(VendorErrorCode.PRODUCT_NOT_FOUND));
+
+    product.delete(this.hubId, this.owner.getId(), requesterId, productPermissionChecker);
+  }
+
   private static void checkCreatePermission(
       UUID hubId, UUID requestId, PermissionChecker permissionChecker) {
     if (!permissionChecker.hasCreatePermission(hubId, requestId)) {
@@ -348,6 +394,13 @@ public class Vendor extends BaseAudit {
       UUID hubId, UUID requestId, PermissionChecker permissionChecker) {
     if (!permissionChecker.hasUpdatePermission(hubId, requestId)) {
       throw new VendorException(VendorErrorCode.VENDOR_UPDATE_FORBIDDEN);
+    }
+  }
+
+  private void checkDeletePermission(
+      UUID hubId, UUID requestId, PermissionChecker permissionChecker) {
+    if (!permissionChecker.hasDeletePermission(hubId, requestId)) {
+      throw new VendorException(VendorErrorCode.VENDOR_DELETE_FORBIDDEN);
     }
   }
 

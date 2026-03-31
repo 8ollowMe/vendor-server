@@ -46,7 +46,8 @@ public enum VendorErrorCode implements ErrorCode {
   PRODUCT_REGISTER_FORBIDDEN("V402", "상품 등록 권한이 부족합니다.", HttpStatus.FORBIDDEN),
   VENDOR_UPDATE_FORBIDDEN("V403", "업체 수정 권한이 부족합니다.", HttpStatus.FORBIDDEN),
   PRODUCT_UPDATE_FORBIDDEN("V404", "상품 수정 권한이 부족합니다.", HttpStatus.FORBIDDEN),
-  ;
+  VENDOR_DELETE_FORBIDDEN("405", "업체 삭제 권한이 부족합니다.", HttpStatus.FORBIDDEN),
+  PRODUCT_DELETE_FORBIDDEN("406", "상품 삭제 권한이 부족합니다.", HttpStatus.FORBIDDEN);
 
   private final String code;
   private final String message;

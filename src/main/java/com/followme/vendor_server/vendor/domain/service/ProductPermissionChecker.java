@@ -6,4 +6,6 @@ public interface ProductPermissionChecker {
   boolean hasCreatePermission(UUID hubId, UUID ownerId, UUID requesterId);
 
   boolean hasUpdatePermission(UUID hubId, UUID ownerId, UUID requesterId);
+
+  boolean hasDeletePermission(UUID hubId, UUID ownerId, UUID requesterId);
 }
