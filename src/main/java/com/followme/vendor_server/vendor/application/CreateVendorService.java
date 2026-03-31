@@ -8,8 +8,10 @@ import com.followme.vendor_server.vendor.domain.service.PermissionChecker;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
+@Transactional
 @Service
 @RequiredArgsConstructor
 public class CreateVendorService {
@@ -17,7 +19,8 @@ public class CreateVendorService {
   private final PermissionChecker permissionChecker;
   private final HubExistenceChecker hubExistenceChecker;
 
-  public Vendor save(CreateVendorCommand command) {
+  /** TODO: result 값 수정 */
+  public Vendor create(CreateVendorCommand command) {
     Vendor vendor =
         Vendor.create(
             command.getHubId(),
@@ -33,7 +36,7 @@ public class CreateVendorService {
             hubExistenceChecker);
 
     Vendor saved = vendorRepository.save(vendor);
-    log.debug("Saved vendor {}", saved);
+    log.info("Created vendor with id {}", saved.getId());
     return saved;
   }
 }
