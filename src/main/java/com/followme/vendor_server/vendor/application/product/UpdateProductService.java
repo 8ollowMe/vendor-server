@@ -5,6 +5,8 @@ import static com.followMe.vendor_server.vendor.application.command.BulkUpdatePr
 import com.followMe.vendor_server.vendor.application.command.BulkUpdateProductStatusCommand;
 import com.followMe.vendor_server.vendor.application.command.UpdateProductCommand;
 import com.followMe.vendor_server.vendor.application.command.UpdateProductStatusCommand;
+import com.followMe.vendor_server.vendor.application.dto.ProductStatusUpdateDto.ProductStatusUpdateResponse;
+import com.followMe.vendor_server.vendor.application.dto.ProductUpdateDto.ProductUpdateResponse;
 import com.followMe.vendor_server.vendor.domain.Product;
 import com.followMe.vendor_server.vendor.domain.Vendor;
 import com.followMe.vendor_server.vendor.domain.VendorRepository;
@@ -32,7 +34,7 @@ public class UpdateProductService {
   private final ProductPermissionChecker productPermissionChecker;
   private final ProductCodeValidator productCodeValidator;
 
-  public Product updateProduct(UpdateProductCommand command) {
+  public ProductUpdateResponse updateProduct(UpdateProductCommand command) {
     Vendor vendor =
         vendorRepository
             .findByIdWithProducts(command.getVendorId())
@@ -51,12 +53,11 @@ public class UpdateProductService {
             productCodeValidator);
 
     /** TODO: updatedEvent 발행, outbox 를 하나의 트랜잭션으로 관리하는 기능 추가 해야 됨 */
-    log.info("Updated product with id {}", product.getId());
-
-    return product;
+    log.info("Updated product");
+    return ProductUpdateResponse.from(product);
   }
 
-  public Product updateProductStatus(UpdateProductStatusCommand command) {
+  public ProductStatusUpdateResponse updateProductStatus(UpdateProductStatusCommand command) {
     Vendor vendor =
         vendorRepository
             .findByIdWithProducts(command.getVendorId())
@@ -71,10 +72,8 @@ public class UpdateProductService {
             productPermissionChecker);
 
     /** TODO: statusUpdatedEvent 발행 및 Outbox 저장 로직 추가 필요 */
-    log.info(
-        "Updated product status to {} for product id {}", command.getStatus(), product.getId());
-
-    return product;
+    log.info("Updated product status");
+    return ProductStatusUpdateResponse.from(product);
   }
 
   public void bulkUpdateProductStatus(BulkUpdateProductStatusCommand command) {
@@ -101,8 +100,7 @@ public class UpdateProductService {
             productPermissionChecker);
       }
     }
-    log.info(
-        "Bulk updated {} products across {} vendors", command.getItems().size(), vendors.size());
+    log.info("Bulk updated Products");
   }
 
   private void checkDuplicateProductId(List<ProductStatusUpdateItem> items) {

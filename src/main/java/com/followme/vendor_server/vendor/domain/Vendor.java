@@ -198,7 +198,6 @@ public class Vendor extends BaseAudit {
    * @author 정승현
    */
   public void updateInfo(
-      UUID hubId,
       UUID requestId,
       String name,
       VendorType type,
@@ -211,11 +210,11 @@ public class Vendor extends BaseAudit {
       PermissionChecker permissionChecker,
       HubExistenceChecker hubExistenceChecker) {
 
-    checkHubExistence(hubId, hubExistenceChecker);
-    checkUpdatePermission(hubId, requestId, permissionChecker);
+    checkHubExistence(this.hubId, hubExistenceChecker);
+    checkUpdatePermission(this.hubId, requestId, permissionChecker);
 
     if (!this.owner.getId().equals(ownerId)) {
-      checkUpdatePermission(hubId, ownerId, permissionChecker);
+      checkUpdatePermission(this.hubId, ownerId, permissionChecker);
       this.owner = Owner.of(ownerId, ownerName);
     }
     this.name = name;

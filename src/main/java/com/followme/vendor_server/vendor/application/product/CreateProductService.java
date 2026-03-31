@@ -1,6 +1,7 @@
 package com.followMe.vendor_server.vendor.application.product;
 
 import com.followMe.vendor_server.vendor.application.command.CreateProductCommand;
+import com.followMe.vendor_server.vendor.application.dto.ProductCreateDto.ProductCreateResponse;
 import com.followMe.vendor_server.vendor.domain.Product;
 import com.followMe.vendor_server.vendor.domain.Vendor;
 import com.followMe.vendor_server.vendor.domain.VendorRepository;
@@ -10,7 +11,6 @@ import com.followMe.vendor_server.vendor.domain.service.HubExistenceChecker;
 import com.followMe.vendor_server.vendor.domain.service.ProductCodeValidator;
 import com.followMe.vendor_server.vendor.domain.service.ProductPermissionChecker;
 import jakarta.transaction.Transactional;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -25,8 +25,7 @@ public class CreateProductService {
   private final HubExistenceChecker hubExistenceChecker;
   private final ProductCodeValidator productCodeValidator;
 
-  /** TODO: result 값 수정 */
-  public UUID create(CreateProductCommand command) {
+  public ProductCreateResponse create(CreateProductCommand command) {
     Vendor vendor =
         vendorRepository
             .findById(command.getVendorId())
@@ -45,7 +44,8 @@ public class CreateProductService {
             productCodeValidator);
 
     vendorRepository.save(vendor);
-    log.info("Created product with id {}", product.getId());
-    return product.toUuid();
+
+    log.info("Created product");
+    return ProductCreateResponse.from(product);
   }
 }

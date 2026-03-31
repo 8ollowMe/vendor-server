@@ -1,6 +1,7 @@
 package com.followMe.vendor_server.vendor.application;
 
 import com.followMe.vendor_server.vendor.application.command.UpdateVendorCommand;
+import com.followMe.vendor_server.vendor.application.dto.VendorUpdateDto.VendorUpdateResponse;
 import com.followMe.vendor_server.vendor.domain.Vendor;
 import com.followMe.vendor_server.vendor.domain.VendorRepository;
 import com.followMe.vendor_server.vendor.domain.exception.VendorErrorCode;
@@ -21,15 +22,13 @@ public class UpdateVendorService {
   private final PermissionChecker permissionChecker;
   private final HubExistenceChecker hubExistenceChecker;
 
-  /** TODO: result 값 수정 */
-  public Vendor updateVendorInfo(UpdateVendorCommand command) {
+  public VendorUpdateResponse updateInfo(UpdateVendorCommand command) {
     Vendor vendor =
         vendorRepository
             .findById(command.getVendorId())
             .orElseThrow(() -> new VendorException(VendorErrorCode.VENDOR_NOT_FOUND));
 
     vendor.updateInfo(
-        command.getHubId(),
         command.getRequestId(),
         command.getName(),
         command.getVendorType(),
@@ -42,9 +41,7 @@ public class UpdateVendorService {
         permissionChecker,
         hubExistenceChecker);
 
-    /** TODO: updatedEvent 발행, outbox 를 하나의 트랜잭션으로 관리하는 기능 추가 해야 됨 */
-    log.info("Updated vendor with id {}", vendor.getId());
-
-    return vendor;
+    log.info("Updated vendor");
+    return VendorUpdateResponse.from(vendor);
   }
 }

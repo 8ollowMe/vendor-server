@@ -12,7 +12,6 @@ import lombok.Getter;
 public class CreateVendorCommand {
   private UUID hubId;
   private UUID ownerId;
-  private String ownerName;
   private String name;
   private VendorType type;
   private String description;
