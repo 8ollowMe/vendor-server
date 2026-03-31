@@ -2,6 +2,7 @@ package com.followMe.vendor_server.vendor.infrastructure.repository;
 
 import com.followMe.vendor_server.vendor.domain.Vendor;
 import com.followMe.vendor_server.vendor.domain.VendorRepository;
+import com.followMe.vendor_server.vendor.domain.vo.VendorId;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.UUID;
@@ -15,7 +16,7 @@ public class VendorRepositoryImpl implements VendorRepository {
 
   @Override
   public Optional<Vendor> findById(UUID vendorId) {
-    return vendorJpaRepository.findById(vendorId);
+    return vendorJpaRepository.findById(VendorId.of(vendorId));
   }
 
   @Override
