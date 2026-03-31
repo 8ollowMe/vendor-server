@@ -10,6 +10,7 @@ import com.followMe.vendor_server.vendor.domain.service.HubExistenceChecker;
 import com.followMe.vendor_server.vendor.domain.service.ProductCodeValidator;
 import com.followMe.vendor_server.vendor.domain.service.ProductPermissionChecker;
 import jakarta.transaction.Transactional;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -25,7 +26,7 @@ public class CreateProductService {
   private final ProductCodeValidator productCodeValidator;
 
   /** TODO: result 값 수정 */
-  public Product create(CreateProductCommand command) {
+  public UUID create(CreateProductCommand command) {
     Vendor vendor =
         vendorRepository
             .findById(command.getVendorId())
@@ -45,6 +46,6 @@ public class CreateProductService {
 
     vendorRepository.save(vendor);
     log.info("Created product with id {}", product.getId());
-    return product;
+    return product.toUuid();
   }
 }
