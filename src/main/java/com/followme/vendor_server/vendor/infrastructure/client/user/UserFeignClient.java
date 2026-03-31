@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 @FeignClient(
     name = "user-server",
     path = "/internal/v1/users",
-    fallback = UserFeignClientFallbackFactory.class)
+    fallbackFactory = UserFeignClientFallbackFactory.class)
 public interface UserFeignClient {
 
   @GetMapping("/{userId}")
