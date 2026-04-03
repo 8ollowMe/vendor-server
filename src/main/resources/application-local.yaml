@@ -1,19 +1,65 @@
 server:
-  port: ${VENDOR_PORT}
+  port: 10003
+
 spring:
+  application:
+    name: vendor-server
+
   datasource:
-    url: jdbc:postgresql://localhost:5432/${DB_NAME}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
+    url: jdbc:postgresql://localhost:5432/${DB_NAME:followme}
+    username: ${DB_USERNAME:followme}
+    password: ${DB_PASSWORD:followme}
+    driver-class-name: org.postgresql.Driver
+
   data:
     redis:
-      host: ${REDIS_HOST}
-      port: ${REDIS_PORT}
-      password: ${REDIS_PASSWORD}
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:followme}
+
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
+    show-sql: true
     properties:
       hibernate:
-        show_sql: true
         format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  cloud:
+    config:
+      enabled: false
+    # [CRITICAL 수정] Feign Circuit Breaker 활성화 위치
+#    openfeign:
+#      circuitbreaker:
+#        enabled: true
+feign:
+  circuitbreaker:
+    enabled: true
+
+# Resilience4j 설정 (인스턴스명 user-server로 변경)
+resilience4j:
+  circuitbreaker:
+    instances:
+      user-server:
+        failure-rate-threshold: 50
+        minimum-number-of-calls: 5
+        sliding-window-size: 10
+        wait-duration-in-open-state: 10s
+        permitted-number-of-calls-in-half-open-state: 3
+
+eureka:
+  instance:
+    prefer-ip-address: true
+    hostname: localhost
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: ${EUREKA_SERVER_URL:http://localhost:13101/eureka/}
+
+logging:
+  level:
+    com.followMe.vendor_server: DEBUG
+    org.springframework.cloud.openfeign: DEBUG
+    feign.Logger: DEBUG
