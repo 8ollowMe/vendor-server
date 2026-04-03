@@ -21,17 +21,17 @@ public class InternalController {
   private final UpdateProductService updateProductService;
 
   @GetMapping("/vendors/{vendorId}")
-  public ApiResponse getVendorDetail(@PathVariable UUID vendorId) {
+  public VendorDetailResponse getVendorDetail(@PathVariable UUID vendorId) {
 
     VendorDetailResponse response = vendorQueryService.getVendorDetail(vendorId);
-    return ApiResponse.success(response);
+    return response;
   }
 
   @GetMapping("/products/{productId}")
-  public ApiResponse getProductDetail(@PathVariable UUID productId) {
+  public ProductDetailResponse getProductDetail(@PathVariable UUID productId) {
 
     ProductDetailResponse response = productQueryService.getProductDetail(productId);
-    return ApiResponse.success(response);
+    return response;
   }
 
   @PatchMapping("/products/status")

@@ -39,7 +39,7 @@ ext {
 
 dependencies {
     /* 프로젝트에서 공통으로 사용할 common 라이브러리 */
-    implementation "com.followMe:common-lib:1.0.2"
+    implementation "com.followMe:common-lib:1.0.6"
 
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-web'
