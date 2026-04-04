@@ -1,10 +1,12 @@
-package com.followme.vendor_server.vendor.application;
+package com.followMe.vendor_server.vendor.application;
 
-import com.followme.vendor_server.vendor.application.command.CreateVendorCommand;
-import com.followme.vendor_server.vendor.domain.Vendor;
-import com.followme.vendor_server.vendor.domain.VendorRepository;
-import com.followme.vendor_server.vendor.domain.service.HubExistenceChecker;
-import com.followme.vendor_server.vendor.domain.service.PermissionChecker;
+import com.followMe.vendor_server.vendor.application.client.UserClientService;
+import com.followMe.vendor_server.vendor.application.command.CreateVendorCommand;
+import com.followMe.vendor_server.vendor.application.dto.VendorCreateDto.VendorCreateResponse;
+import com.followMe.vendor_server.vendor.domain.Vendor;
+import com.followMe.vendor_server.vendor.domain.VendorRepository;
+import com.followMe.vendor_server.vendor.domain.service.HubExistenceChecker;
+import com.followMe.vendor_server.vendor.domain.service.PermissionChecker;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -18,14 +20,16 @@ public class CreateVendorService {
   private final VendorRepository vendorRepository;
   private final PermissionChecker permissionChecker;
   private final HubExistenceChecker hubExistenceChecker;
+  private final UserClientService userClientService;
 
-  /** TODO: result 값 수정 */
-  public Vendor create(CreateVendorCommand command) {
+  public VendorCreateResponse create(CreateVendorCommand command) {
+    String ownerName = userClientService.getUserInfo(command.getOwnerId()).getName();
+
     Vendor vendor =
         Vendor.create(
             command.getHubId(),
             command.getOwnerId(),
-            command.getOwnerName(),
+            ownerName,
             command.getName(),
             command.getType(),
             command.getDescription(),
@@ -36,7 +40,8 @@ public class CreateVendorService {
             hubExistenceChecker);
 
     Vendor saved = vendorRepository.save(vendor);
-    log.info("Created vendor with id {}", saved.getId());
-    return saved;
+
+    log.info("Created vendor");
+    return VendorCreateResponse.from(saved);
   }
 }

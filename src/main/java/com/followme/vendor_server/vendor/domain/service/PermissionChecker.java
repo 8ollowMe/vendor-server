@@ -1,4 +1,4 @@
-package com.followme.vendor_server.vendor.domain.service;
+package com.followMe.vendor_server.vendor.domain.service;
 
 import java.util.UUID;
 
@@ -13,4 +13,6 @@ public interface PermissionChecker {
   boolean hasCreatePermission(UUID hubId, UUID requestId);
 
   boolean hasUpdatePermission(UUID hubId, UUID requestId);
+
+  boolean hasDeletePermission(UUID hubId, UUID requestId);
 }

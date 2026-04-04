@@ -1,6 +1,6 @@
-package com.followme.vendor_server.vendor.infrastructure;
+package com.followMe.vendor_server.vendor.infrastructure;
 
-import com.followme.vendor_server.vendor.domain.service.ProductPermissionChecker;
+import com.followMe.vendor_server.vendor.domain.service.ProductPermissionChecker;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
 
@@ -10,6 +10,16 @@ public class ProductPermissionCheckerImpl implements ProductPermissionChecker {
 
   @Override
   public boolean hasCreatePermission(UUID hubId, UUID requestId, UUID requesterId) {
+    return true;
+  }
+
+  @Override
+  public boolean hasUpdatePermission(UUID hubId, UUID ownerId, UUID requesterId) {
+    return true;
+  }
+
+  @Override
+  public boolean hasDeletePermission(UUID hubId, UUID ownerId, UUID requesterId) {
     return true;
   }
 }

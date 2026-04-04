@@ -1,20 +1,22 @@
-package com.followme.vendor_server.vendor.domain;
+package com.followMe.vendor_server.vendor.domain;
 
 import com.followMe.common.entity.BaseAudit;
-import com.followme.vendor_server.vendor.domain.exception.VendorErrorCode;
-import com.followme.vendor_server.vendor.domain.exception.VendorException;
-import com.followme.vendor_server.vendor.domain.service.HubExistenceChecker;
-import com.followme.vendor_server.vendor.domain.service.PermissionChecker;
-import com.followme.vendor_server.vendor.domain.service.ProductPermissionChecker;
-import com.followme.vendor_server.vendor.domain.vo.Address;
-import com.followme.vendor_server.vendor.domain.vo.Owner;
-import com.followme.vendor_server.vendor.domain.vo.VendorId;
+import com.followMe.vendor_server.vendor.domain.exception.VendorErrorCode;
+import com.followMe.vendor_server.vendor.domain.exception.VendorException;
+import com.followMe.vendor_server.vendor.domain.service.HubExistenceChecker;
+import com.followMe.vendor_server.vendor.domain.service.PermissionChecker;
+import com.followMe.vendor_server.vendor.domain.service.ProductCodeValidator;
+import com.followMe.vendor_server.vendor.domain.service.ProductPermissionChecker;
+import com.followMe.vendor_server.vendor.domain.vo.Address;
+import com.followMe.vendor_server.vendor.domain.vo.Owner;
+import com.followMe.vendor_server.vendor.domain.vo.VendorId;
 import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import lombok.*;
+import org.hibernate.annotations.SQLRestriction;
 
 /**
  * 업체(Vendor) 도메인 엔티티
@@ -54,6 +56,7 @@ import lombok.*;
 @Getter
 @Table(name = "p_vendor")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@SQLRestriction("deleted_at IS NULL")
 public class Vendor extends BaseAudit {
 
   @EmbeddedId private VendorId id;
@@ -93,6 +96,16 @@ public class Vendor extends BaseAudit {
     this.type = type;
     this.description = description;
     this.address = address;
+  }
+
+  /**
+   * 업체의 고유 식별자를 UUID 형태로 반환한다.
+   *
+   * @return 업체 UUID
+   * @author 정승현
+   */
+  public UUID toUuid() {
+    return this.id.getId();
   }
 
   /**
@@ -185,7 +198,6 @@ public class Vendor extends BaseAudit {
    * @author 정승현
    */
   public void updateInfo(
-      UUID hubId,
       UUID requestId,
       String name,
       VendorType type,
@@ -198,11 +210,11 @@ public class Vendor extends BaseAudit {
       PermissionChecker permissionChecker,
       HubExistenceChecker hubExistenceChecker) {
 
-    checkHubExistence(hubId, hubExistenceChecker);
-    checkUpdatePermission(hubId, requestId, permissionChecker);
+    checkHubExistence(this.hubId, hubExistenceChecker);
+    checkUpdatePermission(this.hubId, requestId, permissionChecker);
 
     if (!this.owner.getId().equals(ownerId)) {
-      checkUpdatePermission(hubId, ownerId, permissionChecker);
+      checkUpdatePermission(this.hubId, ownerId, permissionChecker);
       this.owner = Owner.of(ownerId, ownerName);
     }
     this.name = name;
@@ -211,6 +223,45 @@ public class Vendor extends BaseAudit {
     this.address = Address.of(address, latitude, longitude);
   }
 
+  /**
+   * 업체를 삭제한다.
+   *
+   * <p>삭제는 기본적으로 soft delete 를 하며, 업체에 등록된 모든 상품도 soft delete 된다.
+   *
+   * <h2>업체 삭제 검증</h2>
+   *
+   * <ul>
+   *   <li>업체 삭제 권한 검증
+   * </ul>
+   *
+   * @param requesterId - 삭제 요청을 한 사용자 식별자
+   * @param permissionChecker - 권한 검증 인터페이스
+   */
+  public void delete(UUID requesterId, PermissionChecker permissionChecker) {
+
+    checkDeletePermission(this.hubId, requesterId, permissionChecker);
+
+    products.forEach(Product::cascadeDelete);
+    this.softDelete();
+  }
+
+  /**
+   * 업체에 새로운 상품을 등록한다.
+   *
+   * <p>상품 생성은 상품을 직접 생성하지않고, 업체를 통해서만 생성한다.
+   *
+   * @param requesterId 등록 요청자 식별자
+   * @param code 상품 코드
+   * @param name 상품명
+   * @param description 상품 설명
+   * @param price 가격
+   * @param status 상품 상태
+   * @param productPermissionChecker 권한 검증 인터페이스
+   * @param hubExistenceChecker 허브 존재 여부 검증 인터페이스
+   * @param productCodeValidator 상품 코드 중복 검증 인터페이스
+   * @return 등록된 상품 엔티티
+   * @author 정승현
+   */
   public Product addProduct(
       UUID requesterId,
       String code,
@@ -219,7 +270,8 @@ public class Vendor extends BaseAudit {
       Integer price,
       ProductStatus status,
       ProductPermissionChecker productPermissionChecker,
-      HubExistenceChecker hubExistenceChecker) {
+      HubExistenceChecker hubExistenceChecker,
+      ProductCodeValidator productCodeValidator) {
 
     Product product =
         Product.create(
@@ -233,9 +285,101 @@ public class Vendor extends BaseAudit {
             price,
             status,
             productPermissionChecker,
-            hubExistenceChecker);
+            hubExistenceChecker,
+            productCodeValidator);
     this.products.add(product);
     return product;
+  }
+
+  /**
+   * 업체 소속 상품의 정보를 수정한다.
+   *
+   * <p>해당 업체에 속한 상품인지 먼저 확인한 후 수정을 위임한다.
+   *
+   * @param productId 수정할 상품 식별자
+   * @param requesterId 수정 요청자 식별자
+   * @param code 수정할 상품 코드
+   * @param name 수정할 상품명
+   * @param price 수정할 가격
+   * @param description 수정할 설명
+   * @param hubExistenceChecker 허브 존재 여부 검증 인터페이스
+   * @param productPermissionChecker 권한 검증 인터페이스
+   * @param productCodeValidator 상품 코드 중복 검증 인터페이스
+   * @return 수정된 상품 엔티티
+   * @throws VendorException 상품을 찾을 수 없거나 검증 실패 시 발생
+   * @author 정승현
+   */
+  public Product updateProductInfo(
+      UUID productId,
+      UUID requesterId,
+      String code,
+      String name,
+      Integer price,
+      String description,
+      HubExistenceChecker hubExistenceChecker,
+      ProductPermissionChecker productPermissionChecker,
+      ProductCodeValidator productCodeValidator) {
+
+    Product product =
+        this.products.stream()
+            .filter(p -> p.toUuid().equals(productId))
+            .findFirst()
+            .orElseThrow(() -> new VendorException(VendorErrorCode.PRODUCT_NOT_FOUND));
+
+    return product.updateInfo(
+        this.hubId,
+        this.owner.getId(),
+        requesterId,
+        code,
+        name,
+        price,
+        description,
+        hubExistenceChecker,
+        productPermissionChecker,
+        productCodeValidator);
+  }
+
+  public Product updateProductStatus(
+      UUID productId,
+      UUID requesterId,
+      ProductStatus status,
+      HubExistenceChecker hubExistenceChecker,
+      ProductPermissionChecker productPermissionChecker) {
+    Product product =
+        this.products.stream()
+            .filter(p -> p.toUuid().equals(productId))
+            .findFirst()
+            .orElseThrow(() -> new VendorException(VendorErrorCode.PRODUCT_NOT_FOUND));
+
+    return product.updateStatus(
+        this.hubId,
+        requesterId,
+        this.owner.getId(),
+        status,
+        hubExistenceChecker,
+        productPermissionChecker);
+  }
+
+  /**
+   * 업체의 상품을 삭제한다.
+   *
+   * <p>상품의 삭제는 반드시 업체를 통해서 삭제해야 한다.
+   *
+   * <p>상품 삭제이기에 상품에 대한 유효성 검증은 상품 도메인에 위임한다.
+   *
+   * @param productId 상품 식별자
+   * @param requesterId 상풍 삭제를 요청한 사용자 식별자
+   * @param productPermissionChecker 상품 권한 검증 인터페이스
+   */
+  public void deleteProduct(
+      UUID productId, UUID requesterId, ProductPermissionChecker productPermissionChecker) {
+    Product product =
+        this.products.stream()
+            .filter(p -> p.toUuid().equals(productId))
+            .findFirst()
+            .orElseThrow(() -> new VendorException(VendorErrorCode.PRODUCT_NOT_FOUND));
+
+    product.delete(this.hubId, this.owner.getId(), requesterId, productPermissionChecker);
   }
 
   private static void checkCreatePermission(
@@ -249,6 +393,13 @@ public class Vendor extends BaseAudit {
       UUID hubId, UUID requestId, PermissionChecker permissionChecker) {
     if (!permissionChecker.hasUpdatePermission(hubId, requestId)) {
       throw new VendorException(VendorErrorCode.VENDOR_UPDATE_FORBIDDEN);
+    }
+  }
+
+  private void checkDeletePermission(
+      UUID hubId, UUID requestId, PermissionChecker permissionChecker) {
+    if (!permissionChecker.hasDeletePermission(hubId, requestId)) {
+      throw new VendorException(VendorErrorCode.VENDOR_DELETE_FORBIDDEN);
     }
   }
 

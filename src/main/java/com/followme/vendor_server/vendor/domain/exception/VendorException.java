@@ -1,4 +1,4 @@
-package com.followme.vendor_server.vendor.domain.exception;
+package com.followMe.vendor_server.vendor.domain.exception;
 
 import com.followMe.common.exception.BusinessException;
 

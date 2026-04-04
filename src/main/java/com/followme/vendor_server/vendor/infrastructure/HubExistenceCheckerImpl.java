@@ -1,6 +1,6 @@
-package com.followme.vendor_server.vendor.infrastructure;
+package com.followMe.vendor_server.vendor.infrastructure;
 
-import com.followme.vendor_server.vendor.domain.service.HubExistenceChecker;
+import com.followMe.vendor_server.vendor.domain.service.HubExistenceChecker;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
 

@@ -1,6 +1,6 @@
-package com.followme.vendor_server.vendor.application.command;
+package com.followMe.vendor_server.vendor.application.command;
 
-import com.followme.vendor_server.vendor.domain.VendorType;
+import com.followMe.vendor_server.vendor.domain.VendorType;
 import jakarta.validation.constraints.*;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
@@ -14,9 +14,6 @@ public class UpdateVendorCommand {
 
   @NotNull(message = "업체 ID는 필수입니다.")
   private UUID vendorId;
-
-  @NotNull(message = "허브 ID는 필수입니다.")
-  private UUID hubId;
 
   @NotNull(message = "요청 ID는 필수입니다.")
   private UUID requestId;

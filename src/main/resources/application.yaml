@@ -4,4 +4,4 @@ spring:
   application:
     name: vendor-server
   profiles:
-    active: ${ACTIVE_PROFILE}
+    active: local

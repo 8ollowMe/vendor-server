@@ -1,4 +1,4 @@
-package com.followme.vendor_server.vendor.domain.vo;
+package com.followMe.vendor_server.vendor.domain.vo;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
