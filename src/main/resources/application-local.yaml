@@ -6,16 +6,16 @@ spring:
     name: vendor-server
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/${DB_NAME:followme}
-    username: ${DB_USERNAME:followme}
-    password: ${DB_PASSWORD:followme}
+    url: jdbc:postgresql://localhost:5454/vendor_db
+    username: vendor
+    password: 1234
     driver-class-name: org.postgresql.Driver
 
   data:
     redis:
-      host: ${REDIS_HOST:localhost}
-      port: ${REDIS_PORT:6379}
-      password: ${REDIS_PASSWORD:followme}
+      host: localhost
+      port: 6379
+      password: vendor
 
   jpa:
     hibernate:
@@ -29,15 +29,26 @@ spring:
   cloud:
     config:
       enabled: false
-    # [CRITICAL 수정] Feign Circuit Breaker 활성화 위치
-#    openfeign:
-#      circuitbreaker:
-#        enabled: true
+
+  kafka:
+    bootstrap-servers: localhost:9092,localhost:9094,localhost:9096
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring.json.add.type.headers: false
+    consumer:
+      group-id: delivery-server
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
+
 feign:
   circuitbreaker:
     enabled: true
 
-# Resilience4j 설정 (인스턴스명 user-server로 변경)
 resilience4j:
   circuitbreaker:
     instances:
@@ -56,8 +67,7 @@ eureka:
     register-with-eureka: true
     fetch-registry: true
     service-url:
-      defaultZone: ${EUREKA_SERVER_URL:http://localhost:13101/eureka/}
-
+      defaultZone: ${EUREKA_SERVER_URL:http://localhost:8761/eureka/}
 logging:
   level:
     com.followMe.vendor_server: DEBUG
