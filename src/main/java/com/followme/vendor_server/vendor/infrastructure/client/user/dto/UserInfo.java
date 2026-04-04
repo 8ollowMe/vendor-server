@@ -1,4 +1,4 @@
-package com.followMe.vendor_server.vendor.domain.dto;
+package com.followMe.vendor_server.vendor.infrastructure.client.user.dto;
 
 import com.followMe.vendor_server.vendor.domain.UserRole;
 import java.util.UUID;
