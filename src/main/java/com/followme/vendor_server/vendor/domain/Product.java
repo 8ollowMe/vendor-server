@@ -1,6 +1,7 @@
 package com.followMe.vendor_server.vendor.domain;
 
 import com.followMe.common.entity.BaseAudit;
+import com.followMe.vendor_server.vendor.domain.event.ProductEvents;
 import com.followMe.vendor_server.vendor.domain.exception.VendorErrorCode;
 import com.followMe.vendor_server.vendor.domain.exception.VendorException;
 import com.followMe.vendor_server.vendor.domain.service.HubExistenceChecker;
@@ -209,7 +210,8 @@ public class Product extends BaseAudit {
       String description,
       HubExistenceChecker hubExistenceChecker,
       ProductPermissionChecker productPermissionChecker,
-      ProductCodeValidator productCodeValidator) {
+      ProductCodeValidator productCodeValidator,
+      ProductEvents events) {
 
     checkValidPrice(price);
     checkHubExistence(hubId, hubExistenceChecker);
@@ -224,6 +226,7 @@ public class Product extends BaseAudit {
     this.description = description;
     this.price = price;
 
+    events.productUpdated(this);
     return this;
   }
 

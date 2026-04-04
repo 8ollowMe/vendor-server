@@ -1,6 +1,7 @@
 package com.followMe.vendor_server.vendor.domain;
 
 import com.followMe.common.entity.BaseAudit;
+import com.followMe.vendor_server.vendor.domain.event.ProductEvents;
 import com.followMe.vendor_server.vendor.domain.exception.VendorErrorCode;
 import com.followMe.vendor_server.vendor.domain.exception.VendorException;
 import com.followMe.vendor_server.vendor.domain.service.HubExistenceChecker;
@@ -318,7 +319,8 @@ public class Vendor extends BaseAudit {
       String description,
       HubExistenceChecker hubExistenceChecker,
       ProductPermissionChecker productPermissionChecker,
-      ProductCodeValidator productCodeValidator) {
+      ProductCodeValidator productCodeValidator,
+      ProductEvents events) {
 
     Product product =
         this.products.stream()
@@ -336,7 +338,8 @@ public class Vendor extends BaseAudit {
         description,
         hubExistenceChecker,
         productPermissionChecker,
-        productCodeValidator);
+        productCodeValidator,
+        events);
   }
 
   public Product updateProductStatus(

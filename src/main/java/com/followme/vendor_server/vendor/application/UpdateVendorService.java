@@ -4,6 +4,7 @@ import com.followMe.vendor_server.vendor.application.command.UpdateVendorCommand
 import com.followMe.vendor_server.vendor.application.dto.VendorUpdateDto.VendorUpdateResponse;
 import com.followMe.vendor_server.vendor.domain.Vendor;
 import com.followMe.vendor_server.vendor.domain.VendorRepository;
+import com.followMe.vendor_server.vendor.domain.event.ProductEvents;
 import com.followMe.vendor_server.vendor.domain.exception.VendorErrorCode;
 import com.followMe.vendor_server.vendor.domain.exception.VendorException;
 import com.followMe.vendor_server.vendor.domain.service.HubExistenceChecker;
@@ -21,6 +22,7 @@ public class UpdateVendorService {
   private final VendorRepository vendorRepository;
   private final PermissionChecker permissionChecker;
   private final HubExistenceChecker hubExistenceChecker;
+  private final ProductEvents events;
 
   public VendorUpdateResponse updateInfo(UpdateVendorCommand command) {
     Vendor vendor =

@@ -67,6 +67,8 @@ dependencies {
 
     /* feign-client */
     implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
+
+    implementation 'org.springframework.kafka:spring-kafka'
 }
 
 dependencyManagement {
