@@ -15,12 +15,15 @@ import com.followMe.vendor_server.vendor.application.dto.VendorUpdateDto.VendorU
 import com.followMe.vendor_server.vendor.application.query.VendorQueryService;
 import com.followMe.vendor_server.vendor.application.query.VendorSearchCondition;
 import com.followMe.vendor_server.vendor.domain.UserRole;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+@Tag(name = "업체", description = "업체/상품 관련 외부 API")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("api/v1")
@@ -42,6 +45,9 @@ public class VendorController {
     return new UserContext(userId, role, userName, hubId, vendorId);
   }
 
+  @Operation(
+      summary = "업체 등록",
+      description = "업체를 등록합니다. <br>" + "'MASTER', 'HUB(담당 허브)' 권한을 가진 사용자만 접근 가능합니다.")
   @PostMapping("/vendors")
   public ResponseEntity<ApiResponse> createVendor(
       @ModelAttribute UserContext authUser, @RequestBody VendorCreateRequest request) {
@@ -51,7 +57,10 @@ public class VendorController {
     return ApiResponse.created(response);
   }
 
-  // userId - 수정 요청자
+  @Operation(
+      summary = "업체 정보 수정",
+      description =
+          "업체 정보를 수정합니다. <br>" + "'MASTER', 'HUB(담당 허브)', 'VENDOR(본인 업체)' 권한을 가진 사용자만 접근 가능합니다.")
   @PutMapping("/vendors/{vendorId}")
   public ResponseEntity<ApiResponse> updateVendor(
       @ModelAttribute UserContext authUser,
@@ -63,7 +72,9 @@ public class VendorController {
     return ApiResponse.ok(response);
   }
 
-  // userId - 삭제 요청자
+  @Operation(
+      summary = "업체 삭제",
+      description = "업체 삭제<br>" + "'MASTER', 'HUB(담당 허브)' 권한을 가진 사용자만 접근 가능합니다.")
   @DeleteMapping("/vendors/{vendorId}")
   public ResponseEntity<ApiResponse> deleteVendor(
       @ModelAttribute UserContext authUser, @PathVariable UUID vendorId) {
@@ -72,6 +83,7 @@ public class VendorController {
     return ApiResponse.ok();
   }
 
+  @Operation(summary = "업체 단건 조회", description = "업체 조회<br>" + "로그인 한 모든 사용자가 접근 가능합니다.")
   @GetMapping("/vendors/{vendorId}")
   public ResponseEntity<ApiResponse> getVendorDetail(
       @ModelAttribute UserContext authUser, @PathVariable UUID vendorId) {
@@ -79,6 +91,12 @@ public class VendorController {
     return ApiResponse.ok(response);
   }
 
+  @Operation(
+      summary = "업체 다건 조회/검색",
+      description =
+          "업체 다건 조회/검색<br>"
+              + "로그인 한 모든 사용자가 접근 가능합니다.<br>"
+              + "업체 이름, 허브 식졀자, 업체 종류 별로 검색 조회를 제공합니다.")
   @GetMapping("/vendors")
   public ResponseEntity<ApiResponse> getVendors(
       @ModelAttribute UserContext authUser,
