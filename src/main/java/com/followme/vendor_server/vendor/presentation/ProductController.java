@@ -7,8 +7,8 @@ import com.followMe.vendor_server.vendor.application.UserContext;
 import com.followMe.vendor_server.vendor.application.dto.ProductCreateDto.ProductCreateRequest;
 import com.followMe.vendor_server.vendor.application.dto.ProductCreateDto.ProductCreateResponse;
 import com.followMe.vendor_server.vendor.application.dto.ProductDetailResponse;
-import com.followMe.vendor_server.vendor.application.dto.ProductStatusUpdateDto;
 import com.followMe.vendor_server.vendor.application.dto.ProductStatusUpdateDto.ProductStatusUpdateRequest;
+import com.followMe.vendor_server.vendor.application.dto.ProductStatusUpdateDto.ProductStatusUpdateResponse;
 import com.followMe.vendor_server.vendor.application.dto.ProductSummaryResponse;
 import com.followMe.vendor_server.vendor.application.dto.ProductUpdateDto.ProductUpdateRequest;
 import com.followMe.vendor_server.vendor.application.dto.ProductUpdateDto.ProductUpdateResponse;
@@ -21,6 +21,7 @@ import com.followMe.vendor_server.vendor.domain.UserRole;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -37,7 +38,7 @@ public class ProductController {
   @ModelAttribute
   public UserContext userContext(
       @RequestHeader("X-User-Id") UUID userId,
-      @RequestHeader("X-User-Role") UserRole role,
+      @RequestHeader("X-Role") UserRole role,
       @RequestHeader(value = "X-User-Name", required = false) String userName,
       @RequestHeader(value = "X-Hub-Id", required = false) UUID hubId,
       @RequestHeader(value = "X-Vendor-Id", required = false) UUID vendorId) {
@@ -46,19 +47,19 @@ public class ProductController {
 
   // userId - 생성 요청자
   @PostMapping("vendors/{vendorId}/products")
-  public ApiResponse createProduct(
+  public ResponseEntity<ApiResponse> createProduct(
       @ModelAttribute UserContext authUser,
       @PathVariable UUID vendorId,
       @RequestBody ProductCreateRequest request) {
 
     ProductCreateResponse response =
         createProductService.create(request.toCommand(vendorId, authUser.userId()));
-    return ApiResponse.success(response);
+    return ApiResponse.created(response);
   }
 
   // userId - 수정 요청자
   @PutMapping("vendors/{vendorId}/products/{productId}")
-  public ApiResponse updateProduct(
+  public ResponseEntity<ApiResponse> updateProduct(
       @ModelAttribute UserContext authUser,
       @PathVariable UUID vendorId,
       @PathVariable UUID productId,
@@ -67,36 +68,36 @@ public class ProductController {
     ProductUpdateResponse response =
         updateProductService.updateProduct(
             request.toCommand(vendorId, productId, authUser.userId()));
-    return ApiResponse.success(response);
+    return ApiResponse.ok(response);
   }
 
   // userId - 수정 요청자
   @PatchMapping("vendors/{vendorId}/products/{productId}/status")
-  public ApiResponse updateProductStatus(
+  public ResponseEntity<ApiResponse> updateProductStatus(
       @ModelAttribute UserContext authUser,
       @PathVariable UUID vendorId,
       @PathVariable UUID productId,
       @RequestBody ProductStatusUpdateRequest request) {
 
-    ProductStatusUpdateDto.ProductStatusUpdateResponse response =
+    ProductStatusUpdateResponse response =
         updateProductService.updateProductStatus(
             request.toCommand(vendorId, productId, authUser.userId()));
-    return ApiResponse.success(response);
+    return ApiResponse.ok(response);
   }
 
   // userId - 삭제 요청자
   @DeleteMapping("vendors/{vendorId}/products/{productId}")
-  public ApiResponse deleteProduct(
+  public ResponseEntity<ApiResponse> deleteProduct(
       @ModelAttribute UserContext authUser,
       @PathVariable UUID vendorId,
       @PathVariable UUID productId) {
 
     deleteProductService.delete(vendorId, productId, authUser.userId());
-    return ApiResponse.success();
+    return ApiResponse.ok();
   }
 
   @GetMapping("/vendors/{vendorId}/products")
-  public ApiResponse getVendorProducts(
+  public ResponseEntity<ApiResponse> getVendorProducts(
       @ModelAttribute UserContext authUser,
       @PathVariable UUID vendorId,
       ProductSearchCondition condition,
@@ -104,27 +105,25 @@ public class ProductController {
 
     Page<ProductSummaryResponse> vendorProducts =
         productQueryService.getVendorProducts(vendorId, condition, pageRequest.toPageable());
-    PageResponse<ProductSummaryResponse> response = PageResponse.of(vendorProducts);
-    return ApiResponse.success(response);
+    return ApiResponse.ok(PageResponse.of(vendorProducts));
   }
 
   @GetMapping("/products")
-  public ApiResponse getProducts(
+  public ResponseEntity<ApiResponse> getProducts(
       @ModelAttribute UserContext authUser,
       ProductSearchCondition condition,
       PageRequest pageRequest) {
 
     Page<ProductSummaryResponse> products =
         productQueryService.getProducts(condition, pageRequest.toPageable());
-    PageResponse<ProductSummaryResponse> response = PageResponse.of(products);
-    return ApiResponse.success(response);
+    return ApiResponse.ok(PageResponse.of(products));
   }
 
   @GetMapping("/products/{productId}")
-  public ApiResponse getProductDetail(
+  public ResponseEntity<ApiResponse> getProductDetail(
       @ModelAttribute UserContext authUser, @PathVariable UUID productId) {
 
     ProductDetailResponse response = productQueryService.getProductDetail(productId);
-    return ApiResponse.success(response);
+    return ApiResponse.ok(response);
   }
 }
