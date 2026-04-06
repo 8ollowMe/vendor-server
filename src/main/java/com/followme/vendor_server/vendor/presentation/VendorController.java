@@ -6,6 +6,7 @@ import com.followMe.common.response.ApiResponse;
 import com.followMe.vendor_server.vendor.application.CreateVendorService;
 import com.followMe.vendor_server.vendor.application.DeleteVendorService;
 import com.followMe.vendor_server.vendor.application.UpdateVendorService;
+import com.followMe.vendor_server.vendor.application.UserContext;
 import com.followMe.vendor_server.vendor.application.dto.*;
 import com.followMe.vendor_server.vendor.application.dto.VendorCreateDto.VendorCreateRequest;
 import com.followMe.vendor_server.vendor.application.dto.VendorCreateDto.VendorCreateResponse;
@@ -17,6 +18,7 @@ import com.followMe.vendor_server.vendor.domain.UserRole;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -30,57 +32,60 @@ public class VendorController {
 
   private final VendorQueryService vendorQueryService;
 
-  @PostMapping("/vendors")
-  public ApiResponse createVendor(
+  @ModelAttribute
+  public UserContext userContext(
       @RequestHeader("X-User-Id") UUID userId,
-      @RequestHeader("X-User-Role") UserRole userRole,
+      @RequestHeader("X-Role") UserRole role,
+      @RequestHeader(value = "X-User-Name", required = false) String userName,
       @RequestHeader(value = "X-Hub-Id", required = false) UUID hubId,
-      @RequestHeader(value = "X-Vendor-Id", required = false) UUID vendorId,
-      @RequestBody VendorCreateRequest request) {
+      @RequestHeader(value = "X-Vendor-Id", required = false) UUID vendorId) {
+    return new UserContext(userId, role, userName, hubId, vendorId);
+  }
 
-    VendorCreateResponse response = createVendorService.create(request.toCommand(userId));
-    return ApiResponse.success(response);
+  @PostMapping("/vendors")
+  public ResponseEntity<ApiResponse> createVendor(
+      @ModelAttribute UserContext authUser, @RequestBody VendorCreateRequest request) {
+
+    VendorCreateResponse response =
+        createVendorService.create(request.toCommand(authUser.userId()));
+    return ApiResponse.created(response);
   }
 
   // userId - 수정 요청자
   @PutMapping("/vendors/{vendorId}")
-  public ApiResponse updateVendor(
-      @RequestHeader("X-User-Id") UUID userId,
-      @RequestHeader("X-User-Role") UserRole userRole,
-      @RequestHeader(value = "X-Hub-Id", required = false) UUID xHubId,
-      @RequestHeader(value = "X-Vendor-Id", required = false) UUID xVendorId,
+  public ResponseEntity<ApiResponse> updateVendor(
+      @ModelAttribute UserContext authUser,
       @RequestBody VendorUpdateRequest request,
       @PathVariable UUID vendorId) {
 
     VendorUpdateResponse response =
-        updateVendorService.updateInfo(request.toCommand(vendorId, userId));
-    return ApiResponse.success(response);
+        updateVendorService.updateInfo(request.toCommand(vendorId, authUser.userId()));
+    return ApiResponse.ok(response);
   }
 
   // userId - 삭제 요청자
   @DeleteMapping("/vendors/{vendorId}")
-  public ApiResponse deleteVendor(
-      @RequestHeader("X-User-Id") UUID userId,
-      @RequestHeader("X-User-Role") UserRole userRole,
-      @RequestHeader(value = "X-Hub-Id", required = false) UUID xHubId,
-      @RequestHeader(value = "X-Vendor-Id", required = false) UUID xVendorId,
-      @PathVariable UUID vendorId) {
+  public ResponseEntity<ApiResponse> deleteVendor(
+      @ModelAttribute UserContext authUser, @PathVariable UUID vendorId) {
 
-    deleteVendorService.delete(vendorId, userId);
-    return ApiResponse.success();
+    deleteVendorService.delete(vendorId, authUser.userId());
+    return ApiResponse.ok();
   }
 
   @GetMapping("/vendors/{vendorId}")
-  public ApiResponse getVendorDetail(@PathVariable UUID vendorId) {
+  public ResponseEntity<ApiResponse> getVendorDetail(
+      @ModelAttribute UserContext authUser, @PathVariable UUID vendorId) {
     VendorDetailResponse response = vendorQueryService.getVendorDetail(vendorId);
-    return ApiResponse.success(response);
+    return ApiResponse.ok(response);
   }
 
   @GetMapping("/vendors")
-  public ApiResponse getVendors(VendorSearchCondition searchCondition, PageRequest pageRequest) {
+  public ResponseEntity<ApiResponse> getVendors(
+      @ModelAttribute UserContext authUser,
+      VendorSearchCondition searchCondition,
+      PageRequest pageRequest) {
     Page<VendorSummaryResponse> vendors =
         vendorQueryService.getVendors(searchCondition, pageRequest.toPageable());
-    PageResponse<VendorSummaryResponse> response = PageResponse.of(vendors);
-    return ApiResponse.success(response);
+    return ApiResponse.ok(PageResponse.of(vendors));
   }
 }

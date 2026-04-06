@@ -10,6 +10,7 @@ import com.followMe.vendor_server.vendor.application.dto.ProductUpdateDto.Produc
 import com.followMe.vendor_server.vendor.domain.Product;
 import com.followMe.vendor_server.vendor.domain.Vendor;
 import com.followMe.vendor_server.vendor.domain.VendorRepository;
+import com.followMe.vendor_server.vendor.domain.event.ProductEvents;
 import com.followMe.vendor_server.vendor.domain.exception.VendorErrorCode;
 import com.followMe.vendor_server.vendor.domain.exception.VendorException;
 import com.followMe.vendor_server.vendor.domain.service.HubExistenceChecker;
@@ -33,6 +34,7 @@ public class UpdateProductService {
   private final HubExistenceChecker hubExistenceChecker;
   private final ProductPermissionChecker productPermissionChecker;
   private final ProductCodeValidator productCodeValidator;
+  private final ProductEvents events;
 
   public ProductUpdateResponse updateProduct(UpdateProductCommand command) {
     Vendor vendor =
@@ -50,7 +52,8 @@ public class UpdateProductService {
             command.getDescription(),
             hubExistenceChecker,
             productPermissionChecker,
-            productCodeValidator);
+            productCodeValidator,
+            events);
 
     /** TODO: updatedEvent 발행, outbox 를 하나의 트랜잭션으로 관리하는 기능 추가 해야 됨 */
     log.info("Updated product");
