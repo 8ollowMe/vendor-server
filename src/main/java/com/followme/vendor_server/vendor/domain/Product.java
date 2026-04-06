@@ -9,6 +9,7 @@ import com.followMe.vendor_server.vendor.domain.service.ProductCodeValidator;
 import com.followMe.vendor_server.vendor.domain.service.ProductPermissionChecker;
 import com.followMe.vendor_server.vendor.domain.vo.ProductId;
 import jakarta.persistence.*;
+import java.util.Set;
 import java.util.UUID;
 import lombok.*;
 
@@ -59,6 +60,11 @@ import lombok.*;
     })
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Product extends BaseAudit {
+  static final Set<UserRole> CREATE_PERMISSION =
+      Set.of(UserRole.MASTER, UserRole.HUB, UserRole.VENDOR);
+  static final Set<UserRole> UPDATE_PERMISSION =
+      Set.of(UserRole.MASTER, UserRole.HUB, UserRole.VENDOR);
+  static final Set<UserRole> DELETE_PERMISSION = Set.of(UserRole.MASTER, UserRole.HUB);
 
   @EmbeddedId private ProductId id;
 
@@ -252,20 +258,16 @@ public class Product extends BaseAudit {
    * <h2>상품 삭제 검증</h2>
    *
    * <ul>
-   *   <li>상품 삭제 권한 검증
+   *   <li>상품 삭제 권한 검증 [MASTER, HUB(담당 허브)]
    * </ul>
    *
    * @param hubId 업체가 소속된 허브
-   * @param ownerId 업체의 대표 식별자
    * @param requesterId 삭제 요청을 한 사용자 식별자
    * @param productPermissionChecker 상품 권한 검증 인터페이스
    */
   protected void delete(
-      UUID hubId,
-      UUID ownerId,
-      UUID requesterId,
-      ProductPermissionChecker productPermissionChecker) {
-    checkDeleteProductPermission(hubId, ownerId, requesterId, productPermissionChecker);
+      UUID hubId, UUID requesterId, ProductPermissionChecker productPermissionChecker) {
+    checkDeleteProductPermission(hubId, requesterId, productPermissionChecker);
     this.softDelete();
   }
 
@@ -283,7 +285,8 @@ public class Product extends BaseAudit {
       UUID ownerId,
       UUID requesterId,
       ProductPermissionChecker productPermissionChecker) {
-    if (!productPermissionChecker.hasCreatePermission(hubId, ownerId, requesterId)) {
+    if (!productPermissionChecker.hasCreatePermission(
+        hubId, ownerId, requesterId, CREATE_PERMISSION)) {
       throw new VendorException(VendorErrorCode.PRODUCT_REGISTER_FORBIDDEN);
     }
   }
@@ -293,17 +296,15 @@ public class Product extends BaseAudit {
       UUID ownerId,
       UUID requesterId,
       ProductPermissionChecker productPermissionChecker) {
-    if (!productPermissionChecker.hasUpdatePermission(hubId, ownerId, requesterId)) {
+    if (!productPermissionChecker.hasUpdatePermission(
+        hubId, ownerId, requesterId, UPDATE_PERMISSION)) {
       throw new VendorException(VendorErrorCode.PRODUCT_UPDATE_FORBIDDEN);
     }
   }
 
   private void checkDeleteProductPermission(
-      UUID hubId,
-      UUID ownerId,
-      UUID requesterId,
-      ProductPermissionChecker productPermissionChecker) {
-    if (!productPermissionChecker.hasDeletePermission(hubId, ownerId, requesterId)) {
+      UUID hubId, UUID requesterId, ProductPermissionChecker productPermissionChecker) {
+    if (!productPermissionChecker.hasDeletePermission(hubId, requesterId, DELETE_PERMISSION)) {
       throw new VendorException(VendorErrorCode.PRODUCT_DELETE_FORBIDDEN);
     }
   }

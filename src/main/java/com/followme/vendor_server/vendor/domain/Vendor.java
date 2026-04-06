@@ -12,10 +12,7 @@ import com.followMe.vendor_server.vendor.domain.vo.Address;
 import com.followMe.vendor_server.vendor.domain.vo.Owner;
 import com.followMe.vendor_server.vendor.domain.vo.VendorId;
 import jakarta.persistence.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 import lombok.*;
 import org.hibernate.annotations.SQLRestriction;
 
@@ -47,8 +44,8 @@ import org.hibernate.annotations.SQLRestriction;
  * <ul>
  *   <li>{@link #create(UUID, UUID, String, String, VendorType, String, String, Double, Double,
  *       PermissionChecker, HubExistenceChecker)} - 업체 등록
- *   <li>{@link #updateInfo(UUID, UUID, String, VendorType, String, UUID, String, String, Double,
- *       Double, PermissionChecker, HubExistenceChecker)} - 업체 정보 수정
+ *   <li>{@link #updateInfo(UUID, String, VendorType, String, UUID, String, String, Double, Double,
+ *       PermissionChecker, HubExistenceChecker)} - 업체 정보 수정
  * </ul>
  *
  * @author 정승현
@@ -59,6 +56,10 @@ import org.hibernate.annotations.SQLRestriction;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @SQLRestriction("deleted_at IS NULL")
 public class Vendor extends BaseAudit {
+  static final Set<UserRole> CREATE_PERMISSION = Set.of(UserRole.MASTER, UserRole.HUB);
+  static final Set<UserRole> UPDATE_PERMISSION =
+      Set.of(UserRole.MASTER, UserRole.HUB, UserRole.VENDOR);
+  static final Set<UserRole> DELETE_PERMISSION = Set.of(UserRole.MASTER, UserRole.HUB);
 
   @EmbeddedId private VendorId id;
 
@@ -178,11 +179,10 @@ public class Vendor extends BaseAudit {
    *
    * <ul>
    *   <li>허브 존재 유무 검증
-   *   <li>업체 수정 권한 검증
+   *   <li>업체 수정 권한 검증 [MASTER, HUB(담당 허브), VENDOR(본인 업체)]
    *   <li>업체 대표 수정 시, 수정하려는 유저 권한 검증
    * </ul>
    *
-   * @param hubId 소속 허브 식별자
    * @param requestId 수정 요청을 한 사용자 식별자
    * @param name 수정할 업체 이름
    * @param type 수정할 업체 종류 [SUPPLIER, BUYER]
@@ -212,10 +212,10 @@ public class Vendor extends BaseAudit {
       HubExistenceChecker hubExistenceChecker) {
 
     checkHubExistence(this.hubId, hubExistenceChecker);
-    checkUpdatePermission(this.hubId, requestId, permissionChecker);
+    checkUpdatePermission(this.hubId, requestId, this.toUuid(), permissionChecker);
 
     if (!this.owner.getId().equals(ownerId)) {
-      checkUpdatePermission(this.hubId, ownerId, permissionChecker);
+      checkUpdatePermission(this.hubId, ownerId, this.toUuid(), permissionChecker);
       this.owner = Owner.of(ownerId, ownerName);
     }
     this.name = name;
@@ -382,26 +382,26 @@ public class Vendor extends BaseAudit {
             .findFirst()
             .orElseThrow(() -> new VendorException(VendorErrorCode.PRODUCT_NOT_FOUND));
 
-    product.delete(this.hubId, this.owner.getId(), requesterId, productPermissionChecker);
+    product.delete(this.hubId, requesterId, productPermissionChecker);
   }
 
   private static void checkCreatePermission(
       UUID hubId, UUID requestId, PermissionChecker permissionChecker) {
-    if (!permissionChecker.hasCreatePermission(hubId, requestId)) {
+    if (!permissionChecker.hasCreatePermission(hubId, requestId, CREATE_PERMISSION)) {
       throw new VendorException(VendorErrorCode.VENDOR_REGISTER_FORBIDDEN);
     }
   }
 
   private void checkUpdatePermission(
-      UUID hubId, UUID requestId, PermissionChecker permissionChecker) {
-    if (!permissionChecker.hasUpdatePermission(hubId, requestId)) {
+      UUID hubId, UUID requestId, UUID vendorId, PermissionChecker permissionChecker) {
+    if (!permissionChecker.hasUpdatePermission(hubId, requestId, vendorId, UPDATE_PERMISSION)) {
       throw new VendorException(VendorErrorCode.VENDOR_UPDATE_FORBIDDEN);
     }
   }
 
   private void checkDeletePermission(
       UUID hubId, UUID requestId, PermissionChecker permissionChecker) {
-    if (!permissionChecker.hasDeletePermission(hubId, requestId)) {
+    if (!permissionChecker.hasDeletePermission(hubId, requestId, DELETE_PERMISSION)) {
       throw new VendorException(VendorErrorCode.VENDOR_DELETE_FORBIDDEN);
     }
   }

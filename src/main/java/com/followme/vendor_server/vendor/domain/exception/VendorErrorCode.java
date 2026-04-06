@@ -38,9 +38,17 @@ public enum VendorErrorCode implements ErrorCode {
       "v053", "한 번의 요청에 동일한 상품의 상태 수정이 요청되었습니다.", HttpStatus.BAD_REQUEST),
 
   HUB_NOT_FOUND("V101", "존재하지 않는 허브입니다.", HttpStatus.NOT_FOUND),
+  HUB_CLIENT_CIRCUIT_BREAKER(
+      "V102", "허브 서비스 상태가 불안하여, 요청이 일시 차단 되었습니다.", HttpStatus.SERVICE_UNAVAILABLE),
+  HUB_INVALID_INFO("V103", "잘못된 허브 정보 요청입니다.", HttpStatus.BAD_REQUEST),
+  HUB_CLIENT_UNAVAILABLE("V104", "허브 서비스 통신에 문제가 생겼습니다.", HttpStatus.SERVICE_UNAVAILABLE),
 
   USER_INVALID_TYPE("V301", "옳바르지않은 유저 타입입니다.", HttpStatus.BAD_REQUEST),
   USER_NOT_FOUND("302", "존재하지않는 유저 입니다.", HttpStatus.NOT_FOUND),
+  USER_CLIENT_UNAVAILABLE("V303", "유저 서비스 통신에 문제가 생겼습니다.", HttpStatus.SERVICE_UNAVAILABLE),
+  USER_CLIENT_CIRCUIT_BREAKER(
+      "V304", "유저 서비스 상태가 불안하여, 요청이 일시 차단 되었습니다.", HttpStatus.SERVICE_UNAVAILABLE),
+  USER_INVALID_INFO("V305", "잘못된 유저 정보 요청입니다.", HttpStatus.BAD_REQUEST),
 
   /** 권한 관련 에러 */
   VENDOR_REGISTER_FORBIDDEN("V401", "업체 등록 권한이 부족합니다.", HttpStatus.FORBIDDEN),

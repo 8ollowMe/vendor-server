@@ -4,7 +4,8 @@ server:
 spring:
   application:
     name: vendor-server
-
+  config:
+    import: 'optional:configserver:'
   datasource:
     url: jdbc:postgresql://localhost:5454/vendor_db
     username: vendor
@@ -28,7 +29,12 @@ spring:
 
   cloud:
     config:
-      enabled: false
+      discovery:
+        enabled: false
+    openfeign:
+      circuitbreaker:
+        enabled: true
+
 
   kafka:
     bootstrap-servers: localhost:9092,localhost:9094,localhost:9096
@@ -36,28 +42,45 @@ spring:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
       properties:
-        spring.json.add.type.headers: false
+        spring.json.add.type.headers: true
     consumer:
-      group-id: delivery-server
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
-      properties:
-        spring.json.trusted.packages: "*"
-
-feign:
-  circuitbreaker:
-    enabled: true
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
 
 resilience4j:
-  circuitbreaker:
+  retry:
+    retry-aspect-order: 1
+    configs:
+      default:
+        maxAttempts: 3
+        waitDuration: 1s
+        retryExceptions:
+          - com.followMe.vendor_server.vendor.infrastructure.client.user.UserClientUnavailableException
+          - com.followMe.vendor_server.vendor.infrastructure.client.hub.HubClientUnavailableException
+
     instances:
       user-server:
-        failure-rate-threshold: 50
-        minimum-number-of-calls: 5
-        sliding-window-size: 10
-        wait-duration-in-open-state: 10s
-        permitted-number-of-calls-in-half-open-state: 3
+        baseConfig: default
+
+
+  circuitbreaker:
+    circuit-breaker-aspect-order: 2
+    configs:
+      default:
+        registerHealthIndicator: true
+        slidingWindowType: COUNT_BASED
+        slidingWindowSize: 5 # 5개 요청 기반
+        minimumNumberOfCalls: 3 #3개 임시
+        failureRateThreshold: 50 # 50% 실패 시 Open
+        waitDurationInOpenState: 10s # Open 후 Half-Open까지 대기 시간
+        ignore-exceptions:
+          - feign.FeignException.NotFound
+          - feign.FeignException.BadRequest
+
+    instances:
+      user-server:
+        baseConfig: default
 
 eureka:
   instance:
