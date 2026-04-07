@@ -23,6 +23,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -122,10 +123,12 @@ public class ProductController {
       @ModelAttribute UserContext authUser,
       @PathVariable UUID vendorId,
       ProductSearchCondition condition,
-      PageRequest pageRequest) {
+      PageRequest pageRequest,
+      Sort sort) {
 
     Page<ProductSummaryResponse> vendorProducts =
-        productQueryService.getVendorProducts(vendorId, condition, pageRequest.toPageable());
+        productQueryService.getVendorProducts(
+            vendorId, condition, pageRequest.toPageable(ifNotSortedReturnCreatedAtDesc(sort)));
     return ApiResponse.ok(PageResponse.of(vendorProducts));
   }
 
@@ -139,10 +142,12 @@ public class ProductController {
   public ResponseEntity<ApiResponse> getProducts(
       @ModelAttribute UserContext authUser,
       ProductSearchCondition condition,
-      PageRequest pageRequest) {
+      PageRequest pageRequest,
+      Sort sort) {
 
     Page<ProductSummaryResponse> products =
-        productQueryService.getProducts(condition, pageRequest.toPageable());
+        productQueryService.getProducts(
+            condition, pageRequest.toPageable(ifNotSortedReturnCreatedAtDesc(sort)));
     return ApiResponse.ok(PageResponse.of(products));
   }
 
@@ -155,5 +160,9 @@ public class ProductController {
 
     ProductDetailResponse response = productQueryService.getProductDetail(productId);
     return ApiResponse.ok(response);
+  }
+
+  private Sort ifNotSortedReturnCreatedAtDesc(Sort sort) {
+    return sort.isSorted() ? sort : Sort.by(Sort.Direction.DESC, "createdAt");
   }
 }

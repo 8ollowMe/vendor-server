@@ -20,6 +20,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -101,9 +102,15 @@ public class VendorController {
   public ResponseEntity<ApiResponse> getVendors(
       @ModelAttribute UserContext authUser,
       VendorSearchCondition searchCondition,
-      PageRequest pageRequest) {
+      PageRequest pageRequest,
+      Sort sort) {
     Page<VendorSummaryResponse> vendors =
-        vendorQueryService.getVendors(searchCondition, pageRequest.toPageable());
+        vendorQueryService.getVendors(
+            searchCondition, pageRequest.toPageable(ifNotSortedReturnCreatedAtDesc(sort)));
     return ApiResponse.ok(PageResponse.of(vendors));
+  }
+
+  private Sort ifNotSortedReturnCreatedAtDesc(Sort sort) {
+    return sort.isSorted() ? sort : Sort.by(Sort.Direction.DESC, "createdAt");
   }
 }
