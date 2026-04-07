@@ -3,12 +3,14 @@ package com.followMe.vendor_server.vendor.infrastructure.repository.query;
 import com.followMe.vendor_server.vendor.application.dto.VendorDetailResponse;
 import com.followMe.vendor_server.vendor.application.dto.VendorSummaryResponse;
 import com.followMe.vendor_server.vendor.application.query.VendorSearchCondition;
-import com.followMe.vendor_server.vendor.domain.QVendor;
-import com.followMe.vendor_server.vendor.domain.VendorType;
+import com.followMe.vendor_server.vendor.domain.*;
 import com.followMe.vendor_server.vendor.domain.query.VendorQueryRepository;
+import com.querydsl.core.types.Order;
+import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.QBean;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.PathBuilder;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
@@ -17,6 +19,7 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
@@ -42,7 +45,7 @@ public class VendorQueryRepositoryImpl implements VendorQueryRepository {
                 hubIdEq(condition.getHubId(), vendor))
             .offset(pageable.getOffset())
             .limit(pageable.getPageSize())
-            .orderBy(vendor.createdAt.desc())
+            .orderBy(toOrderSpecifier(pageable.getSort(), vendor))
             .fetch();
 
     JPAQuery<Long> countQuery =
@@ -92,6 +95,22 @@ public class VendorQueryRepositoryImpl implements VendorQueryRepository {
         vendor.hubId.as("hubId"),
         vendor.owner.name.as("ownerName"),
         vendor.address.address.as("address"));
+  }
+
+  private OrderSpecifier<?>[] toOrderSpecifier(Sort sort, QVendor vendor) {
+    if (sort == null || sort.isUnsorted()) {
+      return new OrderSpecifier[] {vendor.createdAt.desc()};
+    }
+
+    PathBuilder<Vendor> entityPath = new PathBuilder<>(Vendor.class, vendor.getMetadata());
+
+    return sort.stream()
+        .map(
+            order ->
+                new OrderSpecifier(
+                    order.isAscending() ? Order.ASC : Order.DESC,
+                    entityPath.get(order.getProperty())))
+        .toArray(OrderSpecifier[]::new);
   }
 
   private BooleanExpression nameContains(String name, QVendor vendor) {

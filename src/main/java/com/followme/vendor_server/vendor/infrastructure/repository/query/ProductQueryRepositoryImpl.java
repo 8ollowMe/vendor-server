@@ -3,13 +3,17 @@ package com.followMe.vendor_server.vendor.infrastructure.repository.query;
 import com.followMe.vendor_server.vendor.application.dto.ProductDetailResponse;
 import com.followMe.vendor_server.vendor.application.dto.ProductSummaryResponse;
 import com.followMe.vendor_server.vendor.application.query.ProductSearchCondition;
+import com.followMe.vendor_server.vendor.domain.Product;
 import com.followMe.vendor_server.vendor.domain.ProductStatus;
 import com.followMe.vendor_server.vendor.domain.QProduct;
 import com.followMe.vendor_server.vendor.domain.QVendor;
 import com.followMe.vendor_server.vendor.domain.query.ProductQueryRepository;
+import com.querydsl.core.types.Order;
+import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.QBean;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.PathBuilder;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
@@ -18,6 +22,7 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
@@ -45,7 +50,7 @@ public class ProductQueryRepositoryImpl implements ProductQueryRepository {
                 statusEq(condition.getStatus(), product))
             .offset(pageable.getOffset())
             .limit(pageable.getPageSize())
-            .orderBy(product.createdAt.desc())
+            .orderBy(toOrderSpecifier(pageable.getSort(), product))
             .fetch();
 
     JPAQuery<Long> countQuery =
@@ -100,6 +105,22 @@ public class ProductQueryRepositoryImpl implements ProductQueryRepository {
         product.status.as("status"),
         product.hubId.as("hubId"),
         product.vendor.id.id.as("vendorId"));
+  }
+
+  private OrderSpecifier<?>[] toOrderSpecifier(Sort sort, QProduct product) {
+    if (sort == null || sort.isUnsorted()) {
+      return new OrderSpecifier[] {product.createdAt.desc()};
+    }
+
+    PathBuilder<Product> entityPath = new PathBuilder<>(Product.class, product.getMetadata());
+
+    return sort.stream()
+        .map(
+            order ->
+                new OrderSpecifier(
+                    order.isAscending() ? Order.ASC : Order.DESC,
+                    entityPath.get(order.getProperty())))
+        .toArray(OrderSpecifier[]::new);
   }
 
   private BooleanExpression vendorIdEq(UUID vendorId, QProduct product) {

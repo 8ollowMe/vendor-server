@@ -90,6 +90,12 @@ services:
       - kafka2
       - kafka3
 
+  zipkin:
+    image: openzipkin/zipkin:latest
+    container_name: zipkin-server
+    restart: unless-stopped
+    ports:
+      - '9411:9411'
 volumes:
   vendor_postgres_data:
   vendor_redis_data:
